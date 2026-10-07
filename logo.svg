@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="DJW volqueta y bulldozer">
-  <rect width="512" height="512" rx="104" fill="#0f1113"/>
+  <rect width="512" height="512" rx="104" fill="#5a6b2e"/>
   <!-- ground -->
   <rect x="40" y="318" width="432" height="5" rx="2.5" fill="#2b3036"/>
 
@@ -51,5 +51,5 @@
     <path d="M286 366 V418 Q286 446 258 446 Q236 446 230 428"/>
     <path d="M312 360 L334 444 L358 394 L382 444 L404 360" stroke-linejoin="round"/>
   </g>
-  <rect x="128" y="470" width="274" height="5" rx="2.5" fill="#6da7ec"/>
+  <rect x="128" y="470" width="274" height="5" rx="2.5" fill="#f2b705"/>
 </svg>
