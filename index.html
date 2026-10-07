@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1113">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Brigadier D5H">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%230f1113%22/%3E%3Ctext x=%2232%22 y=%2243%22 font-size=%2230%22 text-anchor=%22middle%22 fill=%22%236da7ec%22 font-family=%22Arial%22 font-weight=%22bold%22%3ED5H%3C/text%3E%3C/svg%3E">
+<title>Cuentas Brigadier y D5H</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Dark control-room look, single theme by the owner's choice. Layout: control-room ledger. Header with the two machines, tab strip, summary tiles, then charts and ledgers. */
+:root{
+  --bg:#0f1113; --surface:#181b1f; --fg:#eceff2; --muted:#a3a9b0; --faint:#767d85; --line:#2b3036;
+  --accent:#6da7ec; --accent-soft:#1c2a3b;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#9085e9; --neutral:#55585c;
+  --good:#5cc98a; --good-bg:#16311f; --warn:#e6b04f; --warn-bg:#352812; --crit:#f08a86; --crit-bg:#3a1a19;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:20px 48px;font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:22px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:.01em}
+h2{font-size:22px;font-weight:600}
+h3{font-size:17px;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+header{display:grid;gap:14px}
+.machines{display:flex;flex-wrap:wrap;gap:10px}
+.machine{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:0}
+.machine b{font-family:var(--display);font-size:17px;font-weight:600}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.crit{background:var(--crit-bg);color:var(--crit)}
+.pill.info{background:var(--accent-soft);color:var(--accent)}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;scrollbar-width:none}
+nav button{font:600 16px/1 var(--display);letter-spacing:.02em;color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;padding:12px 12px 10px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+nav button:hover{color:var(--fg)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{display:grid;gap:22px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:4px;min-width:0}
+.tile .v{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.1}
+.tile .sub{font-size:13px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;display:grid;gap:14px;min-width:0}
+.card-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--body);font-size:12px;fill:var(--muted)}
+.chart .total{fill:var(--fg);font-weight:600}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart rect.seg{cursor:default}
+.chart rect.seg:hover{opacity:.82}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font-size:13px;padding:7px 10px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-8px;z-index:3}
+.tip b{font-weight:600}
+.tablebox{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td.wrap,th.wrap{white-space:normal;min-width:220px;text-align:left}
+thead th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+tfoot td{font-weight:600;border-bottom:0;border-top:2px solid var(--fg)}
+tr.neg td.num{color:var(--crit)}
+.num-good{color:var(--good)}
+.num-crit{color:var(--crit)}
+.notes{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.notes li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.notes li p+p{margin-top:4px}
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.calc label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.calc input{font:500 16px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;font-variant-numeric:tabular-nums}
+.result{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;border-top:1px solid var(--line);padding-top:14px}
+.result div{display:grid;gap:2px}
+.result b{font-family:var(--display);font-size:24px;font-weight:600}
+.empty{border:1px dashed var(--line);border-radius:8px;padding:18px;display:grid;gap:6px;background:var(--bg)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:520px){.tile .v{font-size:24px} nav button{font-size:15px;padding-inline:9px}}
+.seg-btns{display:flex;flex-wrap:wrap;gap:6px}
+.seg-btns button{font:600 15px var(--display);letter-spacing:.02em;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.seg-btns button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;align-items:end}
+.form label{display:grid;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.form input,.form select,.form textarea{font:500 16px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;font-variant-numeric:tabular-nums}
+.form .full{grid-column:1/-1}
+select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:600 16px var(--display);letter-spacing:.03em;padding:10px 20px;border-radius:6px;border:0;background:var(--accent);color:var(--surface);cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:none;color:var(--muted);border:1px solid var(--line);padding:5px 10px;font-size:14px}
+.btn.danger{background:var(--crit);color:var(--surface);padding:5px 10px;font-size:14px}
+.toast{font-size:14px;font-weight:600}
+.hint{font-size:13px;color:var(--muted)}
+.banner{padding:10px 14px;border-radius:8px;background:var(--warn-bg);color:var(--warn);font-size:14px}
+.card>*{min-width:0}
+.hero-num{display:grid;gap:2px}
+.hero-num b{font-family:var(--display);font-size:clamp(36px,7vw,52px);font-weight:700;line-height:1}
+.liq-out{display:grid;gap:0;border-top:1px solid var(--line)}
+.liq-out .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:15px}
+.liq-out .row.total{font-weight:600;font-size:17px;border-bottom:0;border-top:2px solid var(--fg)}
+.liq-out .row span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.msg{white-space:pre-wrap;font:14px/1.5 var(--body);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;margin:0}
+.abono{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.abono input,.abono select{font:500 14px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:9em}
+.upload{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.imp-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.imp-list ul{margin:6px 0 0;padding-left:18px}
+#lock{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:24px 16px}
+#lock form{width:min(100%,360px);display:grid;gap:14px}
+#lock input[type=password]{font:500 18px var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;width:100%}
+#lock .chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="lock" hidden>
+  <form id="fLock" autocomplete="on">
+    <div class="eyebrow">Control personal · privado</div>
+    <h1>Cuentas Brigadier y D5H</h1>
+    <p class="muted">Escriba la clave para abrir los datos.</p>
+    <input id="pw" type="password" autocomplete="current-password" aria-label="Clave" required>
+    <label class="chk" for="rememberPw"><input id="rememberPw" type="checkbox" checked>Recordar en este dispositivo</label>
+    <button class="btn" type="submit">Abrir</button>
+    <span class="toast" id="lockMsg" role="status"></span>
+  </form>
+</div>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Sociedad 60/40 · control personal</div>
+    <h1>Cuentas Brigadier y D5H</h1>
+    <div class="machines">
+      <div class="machine"><span class="dot" style="background:var(--s1)"></span><div><b>Volqueta doble troque</b><div class="small muted">Chevrolet Brigadier 1983</div></div><span class="pill good">Trabajando</span></div>
+      <div class="machine"><span class="dot" style="background:var(--s2)"></span><div><b>Bulldozer</b><div class="small muted">Caterpillar D5H XL 1981</div></div><span class="pill warn" id="dozerState">En reparación</span></div>
+    </div>
+  </header>
+
+  <div class="banner" id="dbBanner" hidden></div>
+
+  <nav role="tablist" aria-label="Secciones">
+    <button role="tab" id="t-resumen" aria-selected="true" data-tab="resumen">Resumen</button>
+    <button role="tab" id="t-cuenta" aria-selected="false" data-tab="cuenta">Cuenta con Oscar</button>
+    <button role="tab" id="t-registrar" aria-selected="false" data-tab="registrar">Registrar</button>
+    <button role="tab" id="t-camion" aria-selected="false" data-tab="camion">Volqueta</button>
+    <button role="tab" id="t-bulldozer" aria-selected="false" data-tab="bulldozer">Bulldozer</button>
+    <button role="tab" id="t-liquidaciones" aria-selected="false" data-tab="liquidaciones">Liquidaciones</button>
+    <button role="tab" id="t-tiquetes" aria-selected="false" data-tab="tiquetes">Tiquetes</button>
+    <button role="tab" id="t-datos" aria-selected="false" data-tab="datos">Datos</button>
+    <button role="tab" id="t-revisar" aria-selected="false" data-tab="revisar">Por revisar <span class="pill crit" id="revCount" style="margin-left:4px" hidden></span></button>
+  </nav>
+
+  <!-- RESUMEN -->
+  <section class="panel" id="p-resumen" role="tabpanel">
+    <div class="tiles" id="tilesResumen"></div>
+    <div class="card">
+      <div class="card-head"><h2>Cómo se reparte cada mes</h2><span class="small muted" id="rangoResumen">Volqueta · COP</span></div>
+      <div class="legend"><span><i style="background:var(--neutral)"></i>Gastos</span><span><i style="background:var(--s1)"></i>Utilidad DJW 60%</span><span><i style="background:var(--s2)"></i>Utilidad Oscar 40%</span></div>
+      <div class="chart" id="chResumen"></div>
+      <p class="small muted">La altura de cada barra es el producido del mes. Toque un segmento para ver el valor. Los meses con reporte de Don Oscar usan sus cifras; los demás, lo que usted registre.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Margen de la volqueta por mes</h3>
+        <div class="tablebox"><table id="tbMargen"></table></div>
+      </div>
+      <div class="card">
+        <h3>Bulldozer hasta hoy</h3>
+        <p class="muted" id="dozerMiniTxt"></p>
+        <div class="tiles" id="tilesDozerMini"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUENTA CON OSCAR -->
+  <section class="panel" id="p-cuenta" role="tabpanel" hidden>
+    <div class="card hero-card">
+      <div class="card-head"><h2>Saldo del bulldozer entre socios</h2><span class="small muted">Se recalcula con cada pago, abono y liquidación</span></div>
+      <div class="hero-num"><span id="cSaldoTxt" class="eyebrow">—</span><b id="cSaldo">—</b><span id="cSaldoSub" class="small muted"></span></div>
+      <div class="tiles" id="tilesCuenta"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Pendientes por pagar</h3><span class="small muted">Registre aquí cada abono; el 40% de Oscar se suma solo</span></div>
+      <div id="pendBox"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Liquidar un mes</h3><span class="small muted">Ponga los totales de los dos resúmenes de Don Oscar y la factura; lo demás se llena solo</span></div>
+      <div class="upload"><label class="btn" for="fPdf" style="cursor:pointer">Subir PDFs de Don Oscar<input id="fPdf" type="file" accept="application/pdf,.pdf" multiple hidden></label><span class="small muted">La factura, el resumen de ingresos y el de gastos. Puede subirlos juntos o uno por uno.</span><span class="toast" id="impMsg" role="status"></span></div>
+      <div id="impOut"></div>
+      <form id="fLiq" class="form" novalidate>
+        <label for="lMes">Mes<input id="lMes" type="month"></label>
+        <label for="lProd">Total del resumen de ingresos<input id="lProd" type="number" inputmode="numeric" min="0"></label>
+        <label for="lGas">Total del resumen de gastos<input id="lGas" type="number" inputmode="numeric" min="0"></label>
+        <label for="lFact">Factura de transporte de fruto (JW SAS)<input id="lFact" type="number" inputmode="numeric" min="0"></label>
+        <label for="lFactNo">No. de factura<input id="lFactNo" type="text" inputmode="numeric" autocomplete="off"></label>
+        <label for="lReint">Gastos de la volqueta que pagó usted<input id="lReint" type="number" inputmode="numeric" min="0"></label>
+        <label for="lCruce">Descontar a Oscar por el bulldozer<input id="lCruce" type="number" inputmode="numeric"></label>
+        <label for="lAj">Otros ajustes (+ a su favor, − a favor de Oscar)<input id="lAj" type="number" inputmode="numeric"></label>
+        <label for="lAjNota">Nota del ajuste<input id="lAjNota" type="text" autocomplete="off"></label>
+      </form>
+      <div class="liq-out" id="liqOut"></div>
+      <div class="actions"><button class="btn" id="lCopy" type="button">Copiar mensaje para Don Oscar</button><button class="btn ghost" id="lClose" type="button">Cerrar liquidación</button><span class="toast" id="lToast" role="status"></span></div>
+      <pre class="msg" id="lMsg"></pre>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Movimientos de la cuenta</h3><span class="small muted">Positivo: Oscar le debe a usted</span></div>
+      <div class="tablebox"><table id="tbMov"></table></div>
+    </div>
+  </section>
+
+  <!-- REGISTRAR -->
+  <section class="panel" id="p-registrar" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head"><h2>Nuevo registro</h2><span class="small muted">Queda guardado en este dispositivo</span></div>
+      <div class="seg-btns" role="group" aria-label="Tipo de registro">
+        <button type="button" data-kind="viaje" aria-pressed="true">Viaje / ingreso volqueta</button>
+        <button type="button" data-kind="gasto" aria-pressed="false">Gasto</button>
+        <button type="button" data-kind="jornada" aria-pressed="false">Jornada bulldozer</button>
+        <button type="button" data-kind="pago" aria-pressed="false">Pago entre socios</button>
+      </div>
+      <form id="fReg" class="form" novalidate>
+        <label for="rFecha">Fecha<input id="rFecha" type="date" required></label>
+
+        <label for="rTrabajo" data-k="viaje">Tipo de trabajo
+          <select id="rTrabajo">
+            <option value="bal">Fruta Balsora → Gran Sinú ($88.000/t)</option>
+            <option value="mar">Fruta María la Baja → Lorica ($70.000/t)</option>
+            <option value="var">Triturado, relleno o viaje varios</option>
+            <option value="alq">Alquiler de la volqueta (por día)</option>
+            <option value="zona">Transporte en la zona</option>
+          </select></label>
+        <label for="rCliente" data-k="viaje">Cliente
+          <select id="rCliente"><option value="JW">JW SAS</option><option value="tercero">Tercero</option></select></label>
+        <label for="rTon" data-k="viaje">Toneladas (si aplica)<input id="rTon" type="number" inputmode="decimal" step="0.01" min="0"></label>
+        <label for="rTarifa" data-k="viaje">Tarifa por tonelada<input id="rTarifa" type="number" inputmode="numeric" min="0"></label>
+
+        <label for="rMaq" data-k="gasto">Máquina
+          <select id="rMaq"><option value="volqueta">Volqueta</option><option value="bulldozer">Bulldozer</option></select></label>
+        <label for="rCat" data-k="gasto">Categoría<select id="rCat"></select></label>
+        <label for="rPago" data-k="gasto">¿Quién lo pagó?
+          <select id="rPago"><option value="sociedad">Salió del producido (Oscar)</option><option value="DJW">Lo pagué yo (DJW)</option><option value="Oscar">Lo pagó Don Oscar aparte</option></select></label>
+        <label for="rProv" data-k="gasto">Proveedor<input id="rProv" type="text" autocomplete="off"></label>
+        <label for="rPagado" data-k="gasto">Pagado ahora (si es un abono)<input id="rPagado" type="number" inputmode="numeric" min="0" placeholder="Vacío = todo pagado"></label>
+
+        <label for="rObra" data-k="jornada">Obra o cliente<input id="rObra" type="text" autocomplete="off"></label>
+        <label for="rH0" data-k="jornada">Horómetro inicial<input id="rH0" type="number" inputmode="decimal" step="0.1" min="0"></label>
+        <label for="rH1" data-k="jornada">Horómetro final<input id="rH1" type="number" inputmode="decimal" step="0.1" min="0"></label>
+        <label for="rTarH" data-k="jornada">Tarifa por hora<input id="rTarH" type="number" inputmode="numeric" min="0"></label>
+        <label for="rGal" data-k="jornada">ACPM (galones)<input id="rGal" type="number" inputmode="decimal" step="0.5" min="0"></label>
+
+        <label for="rDir" data-k="pago">Dirección
+          <select id="rDir"><option value="DJW→Oscar">Yo le pagué a Don Oscar</option><option value="Oscar→DJW">Don Oscar me pagó a mí</option></select></label>
+        <label for="rCuenta" data-k="pago">Por concepto de
+          <select id="rCuenta"><option value="liquidacion">Saldo de una liquidación de la volqueta</option><option value="bulldozer">Su parte del bulldozer</option><option value="ajuste">Otro ajuste entre socios</option></select></label>
+        <label for="rMesLiq" data-k="pago">Mes que liquida<input id="rMesLiq" type="month"></label>
+
+        <label for="rValor">Valor (COP)<input id="rValor" type="number" inputmode="numeric" min="0" required></label>
+        <label for="rNota" class="full">Concepto o nota<input id="rNota" type="text" autocomplete="off" placeholder="Ej: 4 llantas 295, viaje con fruta de Balsora…"></label>
+        <div class="actions full"><button class="btn" id="rSave" type="submit">Guardar registro</button><span class="toast" id="rToast" role="status"></span></div>
+      </form>
+      <p class="hint" id="rHint"></p>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Últimos registros</h3><span class="small muted" id="regCount"></span></div>
+      <div class="tablebox"><table id="tbReg"></table></div>
+    </div>
+  </section>
+
+  <!-- CAMION -->
+  <section class="panel" id="p-camion" role="tabpanel" hidden>
+    <div class="tiles" id="tilesCamion"></div>
+    <div class="grid2">
+      <div class="card"><h3>Producido por tipo de trabajo</h3><div class="legend" id="lgIng"></div><div class="chart" id="chIng"></div></div>
+      <div class="card"><h3>Gastos por categoría</h3><div class="legend" id="lgGas"></div><div class="chart" id="chGas"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Toneladas y rendimiento de la fruta</h3><span class="small muted">$88.000/t Balsora (Tolú Viejo) → Gran Sinú · $70.000/t María la Baja → Lorica</span></div>
+      <div class="tablebox"><table id="tbTon"></table></div>
+    </div>
+    <div class="card"><h3>Detalle de gastos</h3><div class="tablebox"><table id="tbGas"></table></div></div>
+  </section>
+
+  <!-- BULLDOZER -->
+  <section class="panel" id="p-bulldozer" role="tabpanel" hidden>
+    <div class="tiles" id="tilesDozer"></div>
+    <div class="card">
+      <div class="card-head"><h3>Inversión en la reparación</h3><span class="small muted">Se reparte 60/40 igual que la utilidad</span></div>
+      <div class="tablebox"><table id="tbDozer"></table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Jornadas trabajadas</h3><span class="small muted">Se llenan desde Registrar → Jornada bulldozer</span></div>
+      <div id="jornadasBox"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>¿Cuántas horas para recuperar la inversión?</h3><span class="pill info">Valores de ejemplo, cámbielos</span></div>
+      <p class="small muted">La reserva por hora es lo que se aparta para tren de rodaje, cuchilla y reparaciones antes de repartir.</p>
+      <div class="calc">
+        <label for="cTarifa">Tarifa por hora (COP)<input id="cTarifa" type="number" inputmode="numeric" value="230000"></label>
+        <label for="cGal">ACPM galones por hora<input id="cGal" type="number" inputmode="decimal" step="0.5" value="4.5"></label>
+        <label for="cPrecio">Precio del galón (COP)<input id="cPrecio" type="number" inputmode="numeric" value="10500"></label>
+        <label for="cOper">Operador por hora (COP)<input id="cOper" type="number" inputmode="numeric" value="25000"></label>
+        <label for="cRes">Reserva desgaste por hora (COP)<input id="cRes" type="number" inputmode="numeric" value="30000"></label>
+        <label for="cHrs">Horas trabajadas al mes<input id="cHrs" type="number" inputmode="numeric" value="120"></label>
+      </div>
+      <div class="result" id="calcOut"></div>
+    </div>
+  </section>
+
+  <!-- LIQUIDACIONES -->
+  <section class="panel" id="p-liquidaciones" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head"><h3>Cruce de cuentas mes a mes</h3><span class="small muted">La factura de JW SAS se cruza con su 60% y los gastos del bulldozer</span></div>
+      <div class="tablebox"><table id="tbLiq"></table></div>
+      <p class="small muted">Saldo = factura JW SAS − utilidad DJW 60% − 40% del socio en gastos del bulldozer que pagó usted + 60% de los que pagó Don Oscar ± ajustes. Positivo: consigna usted. Negativo: gira Don Oscar. Los meses marcados "Sugerida" salen de sus registros.</p>
+    </div>
+    <div class="card"><h3>Pagos y consignaciones registrados</h3><div id="pagosBox"></div></div>
+    <div class="card"><h3>Facturas de Don Oscar a JW SAS</h3><div class="tablebox"><table id="tbFact"></table></div></div>
+  </section>
+
+  <!-- TIQUETES -->
+  <section class="panel" id="p-tiquetes" role="tabpanel" hidden>
+    <div class="card">
+      <div class="card-head"><h3>Tiquetes de báscula enviados por el chat</h3><span class="small muted">Extractora El Gran Sinú (Daabon) · origen finca Balsora</span></div>
+      <p class="small muted">Solo los tiquetes que llegaron en foto. La factura es la cifra oficial de toneladas.</p>
+      <div class="tablebox"><table id="tbTiq"></table></div>
+    </div>
+  </section>
+
+  <!-- DATOS -->
+  <section class="panel" id="p-datos" role="tabpanel" hidden>
+    <div class="card">
+      <h3>Exportar</h3>
+      <p class="small muted">Excel con registros, liquidaciones, la cuenta con Don Oscar y el resumen por mes.</p>
+      <div class="tools"><button class="btn" id="bXlsx" type="button">Descargar Excel</button></div>
+    </div>
+    <div class="card">
+      <h3>Respaldo y otros dispositivos</h3>
+      <p class="small muted">Los cambios se guardan en este dispositivo. Para pasarlos al computador o a otro celular, descargue el respaldo aquí y cárguelo allá. Mándeme el respaldo cuando quiera que actualice la versión publicada.</p>
+      <div class="tools"><button class="btn" id="bBackup" type="button">Descargar respaldo</button>
+        <label class="btn ghost" for="fImport" style="cursor:pointer">Cargar respaldo<input id="fImport" type="file" accept="application/json,.json" hidden></label>
+        <span class="toast" id="dataMsg" role="status"></span></div>
+      <p class="small muted" id="dataInfo"></p>
+    </div>
+    <div class="card">
+      <h3>Borrar</h3>
+      <div class="tools"><button class="btn ghost" id="bReset" type="button">Borrar cambios de este dispositivo</button><button id="bLock" type="button" hidden></button></div>
+    </div>
+  </section>
+
+  <!-- REVISAR -->
+  <section class="panel" id="p-revisar" role="tabpanel" hidden>
+    <p class="muted" id="revIntro">Diferencias que encontré al cruzar el chat, los PDF, los comprobantes y las notas de voz.</p>
+    <ul class="notes" id="notes"></ul>
+  </section>
+
+  <footer id="foot">Versión instalable.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script>
+/* ---------- constants ---------- */
+const ING=[{id:"bal",k:"Fruta Balsora → Gran Sinú (JW SAS)",c:"--s1"},{id:"mar",k:"Fruta María la Baja → Lorica",c:"--s2"},{id:"var",k:"Triturado, relleno y viajes varios",c:"--s3"},{id:"alq",k:"Alquiler volqueta",c:"--s4"},{id:"zona",k:"Transporte en la zona",c:"--s5"},{id:"sd",k:"Sin detallar",c:"--neutral"}];
+const GAS=[{id:"acpm",k:"ACPM",c:"--s1"},{id:"conductor",k:"Conductor",c:"--s2"},{id:"ayudante",k:"Ayudante y cargue",c:"--s3"},{id:"peajes",k:"Peajes",c:"--s4"},{id:"llantas",k:"Llantas",c:"--s5"},{id:"mant",k:"Mantenimiento y varios",c:"--s6"},{id:"sd",k:"Sin detallar",c:"--neutral"}];
+const CAT_DOZER=[["reparacion","Reparación (inversión)"],["repuestos","Repuestos de operación"],["operador","Operador"],["acpm","ACPM"],["aceite","Aceite y filtros"],["traslado","Cama baja / traslado"],["otros","Otros"]];
+const TARIFA={bal:88000,mar:70000};
+const MES=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],MESF=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>(n<0?"−":"")+"$"+Math.round(Math.abs(n||0)).toLocaleString("es-CO");
+const fm=n=>{const a=Math.abs(n||0)/1e6;return (n<0?"−":"")+"$"+(a>=10?a.toFixed(1):a.toFixed(2)).replace(".",",")+" M"};
+const pct=x=>isFinite(x)?(x*100).toFixed(0)+"%":"—";
+const sum=a=>a.reduce((s,x)=>s+(+x||0),0);
+const mk=(m,long)=>{const [y,mm]=m.split("-");return (long?MESF:MES)[+mm-1]+(long?" "+y:"")};
+const fdate=d=>d?new Date(d+"T12:00").toLocaleDateString("es-CO",{day:"numeric",month:"short",year:"numeric"}):"—";
+
+let S={meses:{},liq:{},fact:[],tiq:[],reg:[],notas:[],ready:false};
+
+/* ---------- tables, tiles, charts ---------- */
+function tiles(el,items){$(el).innerHTML=items.map(t=>`<div class="tile"><span class="eyebrow">${t[0]}</span><span class="v">${t[1]}</span><span class="sub">${t[2]||""}</span></div>`).join("")}
+function table(el,head,rows,foot,empty){const t=$(el);if(!rows.length){t.innerHTML=`<tbody><tr><td class="muted" style="text-align:left;white-space:normal">${empty||"Sin datos todavía."}</td></tr></tbody>`;return}
+  t.innerHTML=`<thead><tr>${head.map(h=>`<th${h.startsWith("~")?' class="wrap"':''}>${h.replace("~","")}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td${c&&typeof c==="object"?` class="${c.c}"`:""}>${c&&typeof c==="object"?c.t:c}</td>`).join("")}</tr>`).join("")}</tbody>${foot?`<tfoot><tr>${foot.map(c=>`<td>${c}</td>`).join("")}</tr></tfoot>`:""}`}
+function legend(el,ser){$(el).innerHTML=ser.map(s=>`<span><i style="background:var(${s.c})"></i>${s.k}</span>`).join("")}
+function niceMax(v){if(!v)return{max:1e6,step:2.5e5};const e=Math.pow(10,Math.floor(Math.log10(v)));for(const m of [1,1.5,2,2.5,3,4,5,6,8,10]){if(m*e>=v)return{max:m*e,step:(m*e)/(m===1.5||m===3||m===6?3:m===2.5||m===5||m===10?5:4)}}}
+function stacked(el,labels,full,ser){
+  const box=$(el);box._a=[labels,full,ser];const W=Math.max(300,box.clientWidth||560),H=W<480?230:260,L=52,R=8,T=22,B=26;
+  if(!labels.length){box.innerHTML=`<div class="empty"><p class="muted">Aún no hay meses para mostrar.</p></div>`;return}
+  const tot=labels.map((_,i)=>sum(ser.map(s=>s.v[i])));const {max,step}=niceMax(Math.max(...tot));
+  const y=v=>T+(H-T-B)*(1-v/max);const bw=(W-L-R)/labels.length;const w=Math.min(64,bw*0.56);
+  let g="";for(let v=0;v<=max+1;v+=step){g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end">${v===0?"0":fm(v).replace(",00","")}</text>`}
+  let bars="";labels.forEach((m,i)=>{const cx=L+bw*i+bw/2;let acc=0;const segs=ser.map((s,j)=>({s,j,v:s.v[i]})).filter(o=>o.v>0);
+    segs.forEach((o,k)=>{const y0=y(acc),y1=y(acc+o.v);acc+=o.v;const top=k===segs.length-1;const h=Math.max(0,y0-y1-(k>0?2:0));const r=top?Math.min(4,h):0;const x=cx-w/2;
+      bars+=`<path class="seg" d="M${x},${y1+h} L${x},${y1+r} Q${x},${y1} ${x+r},${y1} L${x+w-r},${y1} Q${x+w},${y1} ${x+w},${y1+r} L${x+w},${y1+h} Z" fill="var(${o.s.c})" data-i="${i}" data-j="${o.j}"/>`});
+    bars+=`<text class="total" x="${cx}" y="${y(tot[i])-7}" text-anchor="middle">${fm(tot[i])}</text><text x="${cx}" y="${H-6}" text-anchor="middle">${m}</text>`});
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Barras apiladas por mes">${g}${bars}</svg><div class="tip" hidden></div>`;
+  const tip=box.querySelector(".tip");
+  box.querySelectorAll("path.seg").forEach(p=>{const show=()=>{const i=+p.dataset.i,j=+p.dataset.j;const r=box.getBoundingClientRect(),b=p.getBoundingClientRect();
+      tip.innerHTML=`<b>${full[i]}</b> · ${ser[j].k}<br>${fmt(ser[j].v[i])} · ${pct(ser[j].v[i]/tot[i])} del mes`;tip.hidden=false;tip.style.left=Math.min(Math.max(b.left-r.left+b.width/2,110),r.width-110)+"px";tip.style.top=(b.top-r.top)+"px"};
+    p.addEventListener("mouseenter",show);p.addEventListener("click",show);p.addEventListener("mouseleave",()=>tip.hidden=true)});
+}
+function redraw(){["chResumen","chIng","chGas"].forEach(id=>{const b=$(id);if(b._a&&b.clientWidth)stacked(id,...b._a)})}
+
+/* ---------- model ---------- */
+function monthModel(){
+  const regV=S.reg.filter(r=>r.maquina==="volqueta"&&(r.tipo==="viaje"||r.tipo==="gasto"));
+  const months=[...new Set([...Object.keys(S.meses),...regV.map(r=>r.mes)])].filter(Boolean).sort();
+  return months.map(m=>{
+    const rep=S.meses[m];
+    if(rep)return {m,src:"reporte",ing:ING.map(s=>+(rep.ingresos||{})[s.id]||0),gas:GAS.map(s=>+(rep.gastos||{})[s.id]||0),ton:{bal:+(rep.toneladas||{}).bal||0,mar:+(rep.toneladas||{}).mar||0,zona:+(rep.toneladas||{}).zona||0},det:(rep.detalle||[]).map(d=>({c:d.c,v:+d.v}))};
+    const rs=regV.filter(r=>r.mes===m);
+    const ing=ING.map(s=>sum(rs.filter(r=>r.tipo==="viaje"&&r.trabajo===s.id).map(r=>r.valor)));
+    const gas=GAS.map(s=>sum(rs.filter(r=>r.tipo==="gasto"&&r.categoria===s.id).map(r=>r.valor)));
+    const ton={bal:0,mar:0,zona:0};rs.filter(r=>r.tipo==="viaje"&&ton[r.trabajo]!==undefined).forEach(r=>ton[r.trabajo]+=+r.t||0);
+    return {m,src:"registros",ing,gas,ton,det:rs.filter(r=>r.tipo==="gasto").map(r=>({c:(GAS.find(g=>g.id===r.categoria)||{}).k+(r.nota?" · "+r.nota:""),v:+r.valor}))};
+  });
+}
+function dozerModel(){
+  const g=S.reg.filter(r=>r.maquina==="bulldozer"&&r.tipo==="gasto");
+  const inv=g.filter(r=>r.categoria==="reparacion");const op=g.filter(r=>r.categoria!=="reparacion");
+  const jor=S.reg.filter(r=>r.tipo==="jornada");
+  return {inv,op,jor,invPag:sum(inv.filter(r=>r.estado!=="Cotización").map(r=>r.pagado??r.valor)),invTot:sum(inv.filter(r=>r.estado!=="Cotización").map(r=>r.valor)),horas:sum(jor.map(r=>r.horas)),ingreso:sum(jor.map(r=>r.valor))};
+}
+
+/* ---------- render ---------- */
+function render(){
+  const MM=monthModel(),labels=MM.map(x=>mk(x.m)),full=MM.map(x=>mk(x.m,true));
+  const ingM=MM.map(x=>sum(x.ing)),gasM=MM.map(x=>sum(x.gas)),utM=ingM.map((v,i)=>v-gasM[i]);
+  const tI=sum(ingM),tG=sum(gasM),tU=tI-tG;const D=dozerModel();
+  $("rangoResumen").textContent=MM.length?`Volqueta · ${full[0]} a ${full[full.length-1]} · COP`:"Volqueta · COP";
+  tiles("tilesResumen",[["Producido volqueta",fm(tI),MM.length+" meses"],["Gastos",fm(tG),pct(tG/tI)+" del producido"],["Utilidad",fm(tU),"Margen "+pct(tU/tI)],["Su 60%",fm(tU*.6),"Oscar 40%: "+fm(tU*.4)],["Invertido en bulldozer",fm(D.invTot),D.horas?D.horas.toLocaleString("es-CO")+" h trabajadas":"Sin horas facturadas aún"],(()=>{const C=cuentaModel();return [C.saldo>=0?"Oscar le debe":"Usted le debe a Oscar",fm(Math.abs(C.saldo)),"Saldo bulldozer · ver Cuenta"]})()]);
+  stacked("chResumen",labels,full,[{k:"Gastos",c:"--neutral",v:gasM},{k:"Utilidad DJW 60%",c:"--s1",v:utM.map(u=>u>0?u*.6:0)},{k:"Utilidad Oscar 40%",c:"--s2",v:utM.map(u=>u>0?u*.4:0)}]);
+  table("tbMargen",["Mes","Fuente","Producido","Gastos","Utilidad","Margen"],MM.map((x,i)=>[full[i],`<span class="pill ${x.src==="reporte"?"info":"warn"}">${x.src==="reporte"?"Reporte":"Registros"}</span>`,fmt(ingM[i]),fmt(gasM[i]),fmt(utM[i]),{t:pct(utM[i]/ingM[i]),c:utM[i]/ingM[i]<0.45?"num-crit":"num-good"}]),["Total","",fmt(tI),fmt(tG),fmt(tU),pct(tU/tI)]);
+  $("dozerMiniTxt").textContent=D.horas?`Lleva ${D.horas.toLocaleString("es-CO")} horas y ${fm(D.ingreso)} facturados.`:"Todavía no ha facturado horas. Lo invertido en la reparación va en la pestaña Bulldozer.";
+  tiles("tilesDozerMini",[["Invertido",fm(D.invTot),"Reparación"],["Parte socio 40%",fm(D.invTot*.4),"Parte DJW: "+fm(D.invTot*.6)]]);
+  $("dozerState").textContent=D.horas?"Trabajando":"En reparación";$("dozerState").className="pill "+(D.horas?"good":"warn");
+
+  /* volqueta */
+  const tonT=MM.map(x=>x.ton.bal+x.ton.mar+x.ton.zona);const acpm=MM.map(x=>x.gas[0]);
+  tiles("tilesCamion",[["Toneladas de fruta",Math.round(sum(tonT)).toLocaleString("es-CO")+" t",MM.length?full[0]+" a "+full[full.length-1]:""],["Producido promedio",fm(MM.length?tI/MM.length:0),"por mes"],["ACPM",pct(sum(acpm)/tI),"del producido ("+fm(sum(acpm))+")"],["Llantas",fm(sum(MM.map(x=>x.gas[4]))),"en el periodo"]]);
+  legend("lgIng",ING);stacked("chIng",labels,full,ING.map((s,j)=>({...s,v:MM.map(x=>x.ing[j])})));
+  legend("lgGas",GAS);stacked("chGas",labels,full,GAS.map((s,j)=>({...s,v:MM.map(x=>x.gas[j])})));
+  const n2=v=>v.toLocaleString("es-CO",{maximumFractionDigits:2});
+  table("tbTon",["Mes","Balsora → Gran Sinú","María la Baja → Lorica","Total t","Producido por t","ACPM por t"],MM.map((x,i)=>[full[i],n2(x.ton.bal)+" t",n2(x.ton.mar)+" t",n2(tonT[i])+" t",tonT[i]?fmt(ingM[i]/tonT[i]):"—",tonT[i]?fmt(acpm[i]/tonT[i]):"—"]),["Total",n2(sum(MM.map(x=>x.ton.bal)))+" t",n2(sum(MM.map(x=>x.ton.mar)))+" t",n2(sum(tonT))+" t",sum(tonT)?fmt(tI/sum(tonT)):"—",sum(tonT)?fmt(sum(acpm)/sum(tonT)):"—"]);
+  const det=MM.flatMap((x,i)=>x.det.map(d=>[full[i],{t:esc(d.c),c:"wrap"},fmt(d.v)]));
+  table("tbGas",["Mes","~Concepto","Valor"],det,["Total","",fmt(sum(MM.flatMap(x=>x.det.map(d=>d.v))))]);
+
+  /* bulldozer */
+  tiles("tilesDozer",[["Invertido en reparación",fm(D.invTot),D.inv.length+" compras"],["Parte DJW 60%",fm(D.invTot*.6),""],["Parte Oscar 40%",fm(D.invTot*.4),""],["Horas trabajadas",D.horas.toLocaleString("es-CO")+" h",D.horas?fm(D.ingreso)+" facturados":"Aún sin jornadas"]]);
+  const invS=[...D.inv].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||""));
+  table("tbDozer",["Fecha","~Concepto","Proveedor","Valor","Estado","~Nota"],invS.map(d=>[fdate(d.fecha),{t:esc(d.nota),c:"wrap"},esc(d.proveedor||"—"),fmt(d.valor),{t:`<span class="pill ${d.estado==="Abono"||d.estado==="Cotización"||d.estado==="Por cruzar"?"warn":"good"}">${esc(d.estado||"Pagado")}</span>`,c:""},{t:esc(d.detalle||"—"),c:"wrap small muted"}]),["Total","","",fmt(D.invTot),"",""],"Aún no hay gastos de reparación registrados.");
+  const jor=[...D.jor].sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+  $("jornadasBox").innerHTML=jor.length?`<div class="tablebox"><table id="tbJor"></table></div>`:`<div class="empty"><p class="muted">Cuando el bulldozer empiece a trabajar, registre cada jornada con horómetro inicial y final. Aquí verá horas, ingreso por hora y consumo de ACPM.</p></div>`;
+  if(jor.length)table("tbJor",["Fecha","~Obra","Horas","Tarifa","Valor","ACPM gal","gal/h"],jor.map(j=>[fdate(j.fecha),{t:esc(j.obra||"—"),c:"wrap"},(+j.horas).toLocaleString("es-CO"),fmt(j.tarifa),fmt(j.valor),j.galones||"—",j.galones&&j.horas?(j.galones/j.horas).toFixed(1):"—"]),["Total","",D.horas.toLocaleString("es-CO"),"",fmt(D.ingreso),sum(jor.map(j=>j.galones))||"—",""]);
+  calc();
+
+  /* liquidaciones */
+  const liqRows=[];const mesesLiq=[...new Set([...Object.keys(S.liq),...MM.filter(x=>x.src==="registros").map(x=>x.m)])].sort();
+  mesesLiq.forEach(m=>{const l=S.liq[m];
+    if(l){const aj=(+l.otros||0)+(+l.ajuste||0)-(+l.reintegro||0);liqRows.push([mk(m,true),`<span class="pill info">Cerrada</span>`,fmt(l.fact),"− "+fmt(l.djw),l.dozer?"− "+fmt(-l.dozer):"—",aj?(aj>0?"+ ":"− ")+fmt(Math.abs(aj)):"—",{t:fmt(Math.abs(l.saldo)),c:l.saldo<0?"num-good":""},`<span class="pill ${l.saldo>=0?"info":"good"}">${l.saldo>=0?"DJW consigna":"Oscar gira"}</span>`,{t:esc(l.comp||"")+"<br><span class='small muted'>"+esc(l.det||"")+"</span>",c:"wrap"}]);return}
+    liqRows.push([mk(m,true),`<span class="pill warn">Abierta</span>`,"—","—","—","—","—","—",{t:"Liquídela en la pestaña Cuenta con Oscar",c:"wrap small muted"}]);
+  });
+  table("tbLiq",["Mes","Estado","Factura JW SAS","Utilidad DJW 60%","Bulldozer","Ajustes","Saldo","Quién paga","~Detalle"],liqRows);
+  const pagos=S.reg.filter(r=>r.tipo==="pago").sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||""));
+  $("pagosBox").innerHTML=pagos.length?`<div class="tablebox"><table id="tbPag"></table></div>`:`<p class="muted small">Registre aquí cada consignación o giro (pestaña Registrar → Pago o consignación) para cerrar el mes.</p>`;
+  if(pagos.length)table("tbPag",["Fecha","Dirección","Mes","Valor","~Nota"],pagos.map(p=>[fdate(p.fecha),esc(p.dir),p.mesLiq?mk(p.mesLiq,true):"—",fmt(p.valor),{t:esc(p.nota||""),c:"wrap"}]));
+  const F=[...S.fact].sort((a,b)=>(+a.no)-(+b.no));
+  table("tbFact",["No.","Fecha","~Concepto","Cantidad","Valor"],F.map(f=>[esc(f.no),fdate(f.fecha),{t:esc(f.concepto),c:"wrap"},esc(f.cantidad),fmt(f.valor)]),["","","Total facturado","",fmt(sum(F.map(f=>f.valor)))]);
+
+  /* tiquetes */
+  const T=[...S.tiq].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||""));const kg=sum(T.map(t=>t.kg));
+  table("tbTiq",["Fecha de entrada","Peso final (kg)","Toneladas"],T.map(t=>[fdate(t.fecha),(+t.kg).toLocaleString("es-CO"),(t.kg/1000).toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2})]),T.length?[T.length+" viajes",kg.toLocaleString("es-CO"),"Promedio "+(kg/T.length/1000).toLocaleString("es-CO",{maximumFractionDigits:1})+" t/viaje"]:null);
+
+  /* registros */
+  const R=[...S.reg].filter(r=>r.origen!=="historial").sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")||(b.creado||0)-(a.creado||0));
+  $("regCount").textContent=R.length?R.length+" registros":"";
+  const tipoTxt=r=>r.tipo==="viaje"?(ING.find(s=>s.id===r.trabajo)||{}).k:r.tipo==="gasto"?(r.maquina==="bulldozer"?"Bulldozer · ":"Volqueta · ")+catName(r):r.tipo==="jornada"?`Jornada · ${r.horas} h`:"Pago · "+r.dir;
+  table("tbReg",["Fecha","~Tipo","Valor","~Nota",""],R.slice(0,40).map(r=>[fdate(r.fecha),{t:esc(tipoTxt(r)),c:"wrap"},fmt(r.valor),{t:esc(r.nota||(r.t?r.t+" t":"")),c:"wrap small muted"},{t:`<button class="btn ghost" data-del="${esc(r._id)}">Borrar</button>`,c:""}]),null,"Todavía no ha registrado nada. Use el formulario de arriba; cada registro aparece aquí y en las pestañas.");
+  $("tbReg").querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>askDelete(b)));
+
+  /* notes */
+  const N=[...S.notas].sort((a,b)=>(a.estado==="ok")-(b.estado==="ok")||(a.orden||0)-(b.orden||0));
+  $("notes").innerHTML=N.length?N.map(n=>`<li><span class="pill ${n.estado==="ok"?"good":n.estado==="warn"?"warn":"info"}">${n.estado==="ok"?"Aclarado":n.estado==="warn"?"Diferencia":"Confirmar"}</span><div><p><b>${esc(n.titulo)}</b></p><p class="small muted">${esc(n.texto)}</p></div></li>`).join(""):`<li><span class="pill good">Al día</span><div><p class="muted">No hay diferencias pendientes.</p></div></li>`;
+  {const c=N.filter(n=>n.estado!=="ok").length;$("revCount").textContent=c;$("revCount").hidden=!c;}
+  renderCuenta(MM);
+}
+const catName=r=>r.maquina==="bulldozer"?((CAT_DOZER.find(c=>c[0]===r.categoria)||[])[1]||r.categoria):((GAS.find(g=>g.id===r.categoria)||{}).k||r.categoria);
+
+function calc(){const g=id=>parseFloat($(id).value)||0;
+  const D=dozerModel();const tar=g("cTarifa"),cost=g("cGal")*g("cPrecio")+g("cOper")+g("cRes"),mh=tar-cost,hrs=g("cHrs");
+  const inv=D.invTot;const he=mh>0&&inv?Math.ceil(inv/mh):null;
+  $("calcOut").innerHTML=`<div><span class="small muted">Costo por hora</span><b>${fmt(cost)}</b></div><div><span class="small muted">Utilidad por hora</span><b class="${mh>0?"num-good":"num-crit"}">${fmt(mh)}</b><span class="small muted">DJW ${fmt(mh*.6)} · Oscar ${fmt(mh*.4)}</span></div><div><span class="small muted">Utilidad al mes</span><b>${fm(mh*hrs)}</b></div><div><span class="small muted">Horas para recuperar ${fm(inv)}</span><b>${he?he.toLocaleString("es-CO")+" h":"—"}</b><span class="small muted">${he&&hrs?"≈ "+(he/hrs).toFixed(1).replace(".",",")+" meses":mh<=0?"La tarifa no cubre los costos":""}</span></div>`}
+document.querySelectorAll(".calc input").forEach(i=>i.addEventListener("input",calc));
+
+
+/* ---------- cuenta con Oscar ---------- */
+function paidEvents(g){
+  if(g.estado==="Cotización"||g.estado==="Por pagar"&&!(g.abonos||[]).length)return [];
+  if(Array.isArray(g.abonos))return g.abonos.map(a=>({fecha:a.fecha||g.fecha,valor:+a.valor||0,pago:a.pago||g.pago}));
+  return [{fecha:g.fecha,valor:+g.valor||0,pago:g.pago}];
+}
+function cuentaModel(){
+  const movs=[],pend=[];
+  S.reg.filter(r=>r.maquina==="bulldozer"&&r.tipo==="gasto").forEach(g=>{
+    const ev=paidEvents(g);const pagado=sum(ev.map(e=>e.valor));
+    ev.forEach((e,i)=>{if(e.pago==="DJW")movs.push({fecha:e.fecha,c:`${g.nota||catName(g)}${ev.length>1?` (abono ${i+1})`:""}: usted pagó ${fmt(e.valor)}; 40% de Oscar`,v:0.4*e.valor});
+      else if(e.pago==="Oscar")movs.push({fecha:e.fecha,c:`${g.nota||catName(g)}: Oscar pagó ${fmt(e.valor)}; su 60%`,v:-0.6*e.valor})});
+    const falta=(+g.valor||0)-pagado;if(falta>0.5&&g.estado!=="Cotización")pend.push({g,falta});
+  });
+  Object.entries(S.liq).forEach(([m,l])=>{const v=(+l.dozer||0)+(+l.otros||0);if(v)movs.push({fecha:l.fechaCruce||nextMonth(m)+"-15",c:`Liquidación de ${mk(m,true)}: descontado a Oscar${l.otros?" (incluye ajuste del aceite)":""}`,v})});
+  S.reg.filter(r=>r.tipo==="pago"&&(r.cuenta==="bulldozer"||r.cuenta==="ajuste")).forEach(p=>movs.push({fecha:p.fecha,c:(p.cuenta==="ajuste"?"Ajuste: ":"Pago parte bulldozer: ")+(p.dir==="Oscar→DJW"?"Oscar le pagó":"usted le pagó")+(p.nota?" · "+p.nota:""),v:p.dir==="Oscar→DJW"?-p.valor:p.valor}));
+  movs.sort((a,b)=>a.fecha.localeCompare(b.fecha));let acc=0;movs.forEach(m=>{acc+=m.v;m.acc=acc});
+  const pendTot=sum(pend.map(p=>p.falta));
+  return {movs,saldo:acc,pend,pendTot,proy:acc+0.4*pendTot};
+}
+function nextMonth(m){let [y,mm]=m.split("-").map(Number);mm++;if(mm>12){mm=1;y++}return y+"-"+String(mm).padStart(2,"0")}
+function liqDefaults(m,MM){
+  const x=MM.find(y=>y.m===m);const C=cuentaModel();
+  return {lProd:x?Math.round(sum(x.ing)):"",lGas:x?Math.round(sum(x.gas)):"",
+    lFact:Math.round(sum(S.reg.filter(r=>r.mes===m&&r.tipo==="viaje"&&r.cliente==="JW").map(r=>r.valor)))||"",
+    lReint:Math.round(sum(S.reg.filter(r=>r.mes===m&&r.tipo==="gasto"&&r.maquina==="volqueta"&&r.pago==="DJW").map(r=>r.valor)))||0,
+    lCruce:Math.max(0,Math.round(C.saldo)),lAj:0};
+}
+const touched=new Set();let lastMes="",mesManual=false;
+function liqCalc(){const g=id=>parseFloat($(id).value)||0;
+  const prod=g("lProd"),gas=g("lGas"),ut=prod-gas,djw=Math.round(ut*.6),osc=ut-djw,fact=g("lFact"),reint=g("lReint"),cruce=g("lCruce"),aj=g("lAj");
+  const saldo=fact-djw-reint-cruce+aj;return {m:$("lMes").value,prod,gas,ut,djw,osc,fact,reint,cruce,aj,saldo};}
+function liqRender(){const L=liqCalc();const row=(a,b,cls)=>`<div class="row ${cls||""}"><span>${a}</span><span>${b}</span></div>`;
+  $("liqOut").innerHTML=row("Utilidad (ingresos − gastos)",fmt(L.ut))+row("Oscar 40%",fmt(L.osc))+row("DJW 60%",fmt(L.djw))+row("Factura JW SAS",fmt(L.fact))+row("− Su 60%","− "+fmt(L.djw))+(L.reint?row("− Gastos de la volqueta que pagó usted","− "+fmt(L.reint)):"")+(L.cruce?row("− Parte de Oscar en el bulldozer","− "+fmt(L.cruce)):"")+(L.aj?row("Ajuste"+($("lAjNota").value?" · "+esc($("lAjNota").value):""),(L.aj>0?"− ":"+ ")+fmt(Math.abs(L.aj))):"")+row(L.saldo>=0?"Usted le consigna a Don Oscar":"Don Oscar le gira a usted",fmt(Math.abs(L.saldo)),"total");
+  const M=L.m?mk(L.m,true):"";const n=v=>Math.round(v).toLocaleString("es-CO");
+  $("lMsg").textContent=`Don Oscar, le envío las cuentas de ${M}:\nIngresos ${n(L.prod)} − gastos ${n(L.gas)} = utilidad ${n(L.ut)}\nOscar 40%: ${n(L.osc)}\nDJW 60%: ${n(L.djw)}\n\nFactura ${$("lFactNo").value?"No. "+$("lFactNo").value+" ":""}${n(L.fact)} − DJW ${n(L.djw)}`+(L.reint?` − gastos que pagué ${n(L.reint)}`:"")+(L.cruce?` − su 40% del bulldozer ${n(L.cruce)}`:"")+(L.aj?` ${L.aj>0?"−":"+"} ${$("lAjNota").value||"ajuste"} ${n(Math.abs(L.aj))}`:"")+`\n= ${L.saldo>=0?"valor a consignarle":"saldo a mi favor"}: ${n(Math.abs(L.saldo))}\n\n¿Me confirma si está correcto?`;
+  const closed=S.liq[L.m];$("lClose").textContent=closed?"Reemplazar liquidación cerrada":"Cerrar liquidación";
+}
+function renderCuenta(MM){
+  const C=cuentaModel();
+  $("cSaldoTxt").textContent=C.saldo>=0?"Don Oscar le debe a usted":"Usted le debe a Don Oscar";
+  $("cSaldo").textContent=fmt(Math.abs(C.saldo));$("cSaldo").className=C.saldo>=0?"num-good":"num-crit";
+  $("cSaldoSub").textContent=C.pendTot?`Cuando se paguen los pendientes (${fmt(C.pendTot)}), el saldo pasa a ${fmt(C.proy)}.`:"No hay pendientes por pagar.";
+  const D=dozerModel();
+  tiles("tilesCuenta",[["Invertido en el bulldozer",fm(D.invTot),"Incluye pendientes"],["Le toca a Oscar (40%)",fm(D.invTot*.4),""],["Pendiente por pagar",fm(C.pendTot),C.pend.length+" conceptos"],["Proyectado",fm(C.proy),"Saldo con todo pagado"]]);
+  $("pendBox").innerHTML=C.pend.length?`<div class="tablebox"><table id="tbPend"></table></div>`:`<p class="muted small">No hay saldos pendientes con proveedores ni con el mecánico.</p>`;
+  if(C.pend.length){table("tbPend",["~Concepto","Total","Pagado","Falta","40% Oscar","Registrar abono"],C.pend.map(({g,falta})=>[{t:esc(g.nota)+"<br><span class='small muted'>"+esc(g.proveedor||"")+"</span>",c:"wrap"},fmt(g.valor),fmt(g.valor-falta),fmt(falta),fmt(falta*.4),{t:`<div class="abono"><input type="number" inputmode="numeric" id="ab-${esc(g._id)}" value="${Math.round(falta)}" aria-label="Valor del abono"><select id="abp-${esc(g._id)}" aria-label="Quién paga"><option value="DJW">Pagué yo</option><option value="Oscar">Pagó Oscar</option></select><button class="btn ghost" data-ab="${esc(g._id)}">Guardar</button></div>`,c:""}]));
+    $("tbPend").querySelectorAll("[data-ab]").forEach(b=>b.addEventListener("click",()=>saveAbono(b.dataset.ab,b)));}
+  table("tbMov",["Fecha","~Movimiento","Efecto","Saldo"],[...C.movs].reverse().map(m=>[fdate(m.fecha),{t:esc(m.c),c:"wrap"},{t:(m.v>=0?"+ ":"− ")+fmt(Math.abs(m.v)),c:m.v>=0?"num-good":"num-crit"},fmt(m.acc)]),null,"Sin movimientos todavía.");
+  // liquidation form defaults
+  if(!mesManual){const ks=Object.keys(S.liq).sort();$("lMes").value=ks.length?nextMonth(ks[ks.length-1]):new Date(Date.now()-5*3600e3).toISOString().slice(0,7)}
+  const m=$("lMes").value;if(m!==lastMes){touched.clear();lastMes=m;const cl=S.liq[m];if(cl){$("lFactNo").value=cl.facturaNo||""}}
+  const d=S.liq[m]?{lProd:S.liq[m].producido??"",lGas:S.liq[m].gastos??"",lFact:S.liq[m].fact,lReint:S.liq[m].reintegro||0,lCruce:-(S.liq[m].dozer||0),lAj:S.liq[m].ajuste||0}:liqDefaults(m,MM);
+  Object.entries(d).forEach(([id,v])=>{if(!touched.has(id))$(id).value=v});
+  liqRender();
+}
+["lProd","lGas","lFact","lReint","lCruce","lAj","lAjNota","lFactNo"].forEach(id=>$(id).addEventListener("input",()=>{touched.add(id);liqRender()}));
+$("lMes").addEventListener("change",()=>{mesManual=true;render()});
+$("lCopy").addEventListener("click",async()=>{const t=$("lMsg").textContent;try{await navigator.clipboard.writeText(t);$("lToast").textContent="Mensaje copiado. Péguelo en WhatsApp.";$("lToast").className="toast num-good"}catch(e){const r=document.createRange();r.selectNodeContents($("lMsg"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("lToast").textContent="Seleccioné el mensaje: cópielo con el menú del teléfono.";$("lToast").className="toast"}setTimeout(()=>$("lToast").textContent="",5000)});
+$("lClose").addEventListener("click",async()=>{const b=$("lClose");const L=liqCalc();const toast=$("lToast");
+  if(!db){toast.textContent="No se puede guardar desde esta vista.";toast.className="toast num-crit";return}
+  if(!L.m||!(L.prod>0)){toast.textContent="Falta el mes o el total de ingresos.";toast.className="toast num-crit";return}
+  if(!b.dataset.armed){b.dataset.armed=1;b.textContent="¿Confirma? Toque otra vez";b.className="btn danger";setTimeout(()=>{delete b.dataset.armed;b.className="btn ghost";liqRender()},5000);return}
+  delete b.dataset.armed;b.className="btn ghost";b.disabled=true;
+  try{const no=$("lFactNo").value.trim();
+    await db.doc("liquidaciones/"+L.m).set({mes:L.m,fechaCruce:new Date(Date.now()-5*3600e3).toISOString().slice(0,10),producido:L.prod,gastos:L.gas,fact:L.fact,facturaNo:no,djw:L.djw,dozer:-L.cruce,otros:0,ajuste:L.aj,reintegro:L.reint,saldo:L.saldo,comp:L.saldo>=0?"Pendiente: usted consigna":"Pendiente: Oscar gira",det:[L.reint?"Reintegro de gastos pagados por DJW "+fmt(L.reint):"",L.cruce?"40% de Oscar en el bulldozer "+fmt(L.cruce):"",L.aj?($("lAjNota").value||"Ajuste")+" "+fmt(L.aj):""].filter(Boolean).join("; ")});
+    if(no)await db.doc("facturas/"+no.replace(/[^A-Za-z0-9_-]/g,"")).set({no,fecha:L.m+"-28",concepto:"Transporte de fruto, "+mk(L.m,true),cantidad:"",valor:L.fact});
+    const hasReg=S.reg.some(r=>r.mes===L.m&&r.maquina==="volqueta"&&(r.tipo==="viaje"||r.tipo==="gasto"));
+    if(!S.meses[L.m]&&!hasReg)await db.doc("meses/"+L.m).set({mes:L.m,fuente:"Liquidación",ingresos:{sd:L.prod},gastos:{sd:L.gas},toneladas:{},detalle:(typeof imported!=="undefined"&&imported.gastos?imported.gastos.det.map(d=>({c:d.c,v:d.v})):[])});
+    toast.textContent="Liquidación guardada. Registre el pago cuando se haga.";toast.className="toast num-good"}
+  catch(e){toast.textContent="No se guardó. Intente de nuevo.";toast.className="toast num-crit"}
+  b.disabled=false;setTimeout(()=>toast.textContent="",5000)});
+async function saveAbono(id,b){const g=S.reg.find(r=>r._id===id);const v=Math.round(parseFloat($("ab-"+id).value)||0);if(!db||!g||!(v>0))return;
+  const ab=[...(Array.isArray(g.abonos)?g.abonos:paidEvents(g))];ab.push({fecha:new Date(Date.now()-5*3600e3).toISOString().slice(0,10),valor:v,pago:$("abp-"+id).value});
+  const pag=sum(ab.map(a=>a.valor));b.disabled=true;
+  try{await db.collection("registros").doc(id).update({abonos:ab,estado:pag>=g.valor?"Pagado":"Abono"})}catch(e){b.disabled=false}}
+
+/* ---------- form ---------- */
+let kind="viaje";
+function setKind(k){kind=k;document.querySelectorAll(".seg-btns button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.kind===k));
+  document.querySelectorAll("#fReg [data-k]").forEach(l=>l.hidden=l.dataset.k!==k);
+  $("rHint").textContent={viaje:"Para fruta, ponga las toneladas y el valor se calcula con la tarifa. Para triturado, relleno o alquiler, ponga el valor directo.",gasto:"Volqueta: si salió del producido, deje la primera opción; si lo pagó usted, se le reintegra en la liquidación. Bulldozer: si solo abonó una parte, ponga el abono en 'Pagado ahora' y el resto queda como pendiente.",jornada:"Las horas salen del horómetro final menos el inicial. El valor se calcula con la tarifa por hora.",pago:"Use 'Saldo de una liquidación' para la consignación o el giro de cada mes. Use 'Su parte del bulldozer' cuando Don Oscar le pague su 40% de un repuesto aparte de la liquidación."}[k];
+  $("rValor").readOnly=false;syncAuto()}
+document.querySelectorAll(".seg-btns button").forEach(b=>b.addEventListener("click",()=>setKind(b.dataset.kind)));
+function fillCats(){const m=$("rMaq").value;$("rCat").innerHTML=(m==="bulldozer"?CAT_DOZER:GAS.map(g=>[g.id,g.k])).map(c=>`<option value="${c[0]}">${c[1]}</option>`).join("")}
+$("rMaq").addEventListener("change",fillCats);
+function syncAuto(){
+  if(kind==="viaje"){const t=$("rTrabajo").value;if(TARIFA[t]&&!$("rTarifa").dataset.touched)$("rTarifa").value=TARIFA[t];if(!TARIFA[t]&&!$("rTarifa").dataset.touched)$("rTarifa").value="";
+    const ton=parseFloat($("rTon").value),tar=parseFloat($("rTarifa").value);if(ton&&tar)$("rValor").value=Math.round(ton*tar);
+    $("rCliente").value=(t==="bal"||t==="alq")?"JW":$("rCliente").dataset.touched?$("rCliente").value:"tercero"}
+  if(kind==="jornada"){const h=(parseFloat($("rH1").value)||0)-(parseFloat($("rH0").value)||0),tar=parseFloat($("rTarH").value);if(h>0&&tar)$("rValor").value=Math.round(h*tar)}
+}
+["rTrabajo","rTon","rH0","rH1","rTarH"].forEach(id=>$(id).addEventListener("input",syncAuto));
+$("rTarifa").addEventListener("input",()=>{$("rTarifa").dataset.touched=1;syncAuto()});
+$("rTrabajo").addEventListener("change",()=>{delete $("rTarifa").dataset.touched;syncAuto()});
+$("rCliente").addEventListener("change",()=>$("rCliente").dataset.touched=1);
+
+let db=null;
+$("fReg").addEventListener("submit",async e=>{e.preventDefault();const toast=$("rToast");
+  if(!db){toast.textContent="No se puede guardar desde esta vista.";toast.className="toast num-crit";return}
+  const fecha=$("rFecha").value,valor=parseFloat($("rValor").value);
+  if(!fecha||!(valor>0)){toast.textContent="Falta la fecha o el valor.";toast.className="toast num-crit";return}
+  const r={tipo:kind,fecha,mes:fecha.slice(0,7),valor:Math.round(valor),nota:$("rNota").value.trim(),creado:Date.now()};
+  if(kind==="viaje"){Object.assign(r,{maquina:"volqueta",trabajo:$("rTrabajo").value,cliente:$("rCliente").value,t:parseFloat($("rTon").value)||0,tarifa:parseFloat($("rTarifa").value)||0})}
+  if(kind==="gasto"){Object.assign(r,{maquina:$("rMaq").value,categoria:$("rCat").value,pago:$("rPago").value,proveedor:$("rProv").value.trim()});
+    if(r.maquina==="bulldozer"){const pa=parseFloat($("rPagado").value);const now=isFinite(pa)?Math.min(Math.round(pa),r.valor):r.valor;
+      r.estado=now>=r.valor?"Pagado":now>0?"Abono":"Por pagar";r.abonos=now>0?[{fecha,valor:now,pago:r.pago}]:[];}}
+  if(kind==="jornada"){const h0=parseFloat($("rH0").value)||0,h1=parseFloat($("rH1").value)||0;if(h1<=h0){toast.textContent="El horómetro final debe ser mayor que el inicial.";toast.className="toast num-crit";return}
+    Object.assign(r,{maquina:"bulldozer",obra:$("rObra").value.trim(),h0,h1,horas:Math.round((h1-h0)*10)/10,tarifa:parseFloat($("rTarH").value)||0,galones:parseFloat($("rGal").value)||0})}
+  if(kind==="pago"){Object.assign(r,{maquina:"sociedad",dir:$("rDir").value,cuenta:$("rCuenta").value,mesLiq:$("rMesLiq").value})}
+  $("rSave").disabled=true;
+  try{await db.collection("registros").add(r);toast.textContent="Guardado.";toast.className="toast num-good";
+    ["rTon","rValor","rNota","rProv","rObra","rH0","rH1","rGal","rPagado"].forEach(id=>$(id).value="");if(kind==="jornada")$("rH0").value=r.h1;}
+  catch(err){toast.textContent=err&&err.code==="quota_exceeded"?"La base llegó a su límite de registros.":"No se guardó. Revise la conexión e intente de nuevo.";toast.className="toast num-crit"}
+  $("rSave").disabled=false;setTimeout(()=>toast.textContent="",4000)});
+
+function askDelete(b){if(b.dataset.armed){doDelete(b.dataset.del);return}b.dataset.armed=1;b.textContent="¿Seguro? Toque otra vez";b.className="btn danger";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Borrar";b.className="btn ghost"}},4000)}
+async function doDelete(id){try{await db.collection("registros").doc(id).delete()}catch(e){}}
+
+/* ---------- tabs ---------- */
+const tabs=[...document.querySelectorAll("nav button")];
+function openTab(id){tabs.forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="p-"+id);try{localStorage.setItem("tab",id)}catch(e){}redraw()}
+tabs.forEach(b=>b.addEventListener("click",()=>openTab(b.dataset.tab)));
+let rt;addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(redraw,150)});
+
+/* ---------- boot ---------- */
+$("rFecha").value=new Date(Date.now()-5*3600e3).toISOString().slice(0,10);
+fillCats();setKind("viaje");render();
+{const h=location.hash.slice(1);let saved=null;try{saved=localStorage.getItem("tab")}catch(e){}
+ if(tabs.some(b=>b.dataset.tab===h))openTab(h);else if(saved&&tabs.some(b=>b.dataset.tab===saved))openTab(saved);}
+/* ---------- leer PDFs de Don Oscar ---------- */
+const MESES_ES=["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
+const OCR_LANG_PATH=window.__OCR_LANGPATH||undefined;
+/* "16.640.471" "8,474,000" "$ 22.034.320,00" "720.00"(=720.000) "1,600,00"(=1.600.000) */
+function parseMoney(tok){
+  tok=tok.replace(/[$\s]/g,"");if(!/\d/.test(tok))return null;
+  const seps=tok.match(/[.,]/g)||[];if(!seps.length)return +tok;
+  const groups=tok.split(/[.,]/);const last=groups[groups.length-1];
+  if(last.length===2){
+    if(seps.length>1&&seps[seps.length-1]!==seps[0])return +groups.slice(0,-1).join("");   // 22.034.320,00
+    return +(groups.slice(0,-1).join("")+last+"0");                                         // 720.00 -> 720000
+  }
+  if(groups.slice(1).every(g=>g.length===3))return +groups.join("");
+  return +groups.slice(0,-1).join("");                                                       // 250,39 -> 250 (no money)
+}
+const MONEY_RE=/\$?\s?\d{1,3}(?:[.,]\d{2,3})+|\$?\s?\d{4,}/g;
+function moneyIn(line){return (line.match(MONEY_RE)||[]).map(parseMoney).filter(v=>v!==null&&v>=1000)}
+async function pdfLines(file){
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;const lines=[];let textLen=0;
+  for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n);const tc=await pg.getTextContent();
+    const rows={};tc.items.forEach(it=>{const s=it.str.trim();if(!s)return;textLen+=s.length;const y=Math.round(it.transform[5]/3);(rows[y]=rows[y]||[]).push({x:it.transform[4],w:it.width||0,s:it.str})});
+    Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{const its=rows[y].sort((a,b)=>a.x-b.x);let line="",end=null;
+      its.forEach(o=>{if(end!==null&&o.x-end>2&&!/\s$/.test(line))line+=" ";line+=o.s;end=o.x+o.w});
+      lines.push(fixNums(line.replace(/\s+/g," ").trim()))});}
+  if(textLen>=25)return {passes:[lines],ocr:false};
+  // escaneado: se lee la imagen
+  if(!window.Tesseract)throw new Error("ocr");
+  const passes=[[],[],[]];const PSM=["4","11","3"];
+  const w=await Tesseract.createWorker(window.__OCR_LANG||"spa",1,OCR_LANG_PATH?{langPath:OCR_LANG_PATH,gzip:false}:{});
+  for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n);const vp=pg.getViewport({scale:2.1});const cv=document.createElement("canvas");cv.width=vp.width;cv.height=vp.height;
+    const cx=cv.getContext("2d");await pg.render({canvasContext:cx,viewport:vp}).promise;
+    const im=cx.getImageData(0,0,cv.width,cv.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=0.3*d[i]+0.59*d[i+1]+0.11*d[i+2];const v=g>158?255:0;d[i]=d[i+1]=d[i+2]=v}cx.putImageData(im,0,0);
+    for(let k=0;k<PSM.length;k++){await w.setParameters({tessedit_pageseg_mode:PSM[k]});const r=await w.recognize(cv);
+      passes[k].push(...r.data.text.split("\n").map(s=>fixNums(s.trim())).filter(Boolean));}}
+  await w.terminate();
+  return {passes,ocr:true};
+}
+function fixNums(l){return l.replace(/(\d)\s+([.,]\d)/g,"$1$2").replace(/([.,])\s+(\d)/g,"$1$2").replace(/(\d[.,]\d{1,2})\s(\d{1,2}[.,]\d{3})/g,(m,a,b)=>(a+b).replace(/\s/g,""))}
+function guessMonth(text,fallbackDate){
+  const up=text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const yr=(up.match(/20\d{2}/)||[])[0]||String(new Date().getFullYear());
+  const m=up.match(/(?:MES DE|DE)\s+(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)/)||up.match(/\b(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)\b/);
+  if(m)return yr+"-"+String(MESES_ES.indexOf(m[1])+1).padStart(2,"0");
+  if(fallbackDate){const d=new Date(fallbackDate);d.setMonth(d.getMonth()-1);return d.toISOString().slice(0,7)}
+  return null;
+}
+function mergeOrphans(lines){const out=[];for(let i=0;i<lines.length;i++){const l=lines[i],nx=lines[i+1]||"";
+    const onlyMoney=t=>moneyIn(t).length>0&&!/[A-Za-zÁÉÍÓÚáéíóúñÑ]{3,}/.test(t.replace(MONEY_RE,""));
+    if(!moneyIn(l).length&&/[A-Za-z]{3,}/.test(l)&&onlyMoney(nx)){out.push(l+" "+nx);i++}else out.push(l)}return out}
+function analyze(lines,name){
+  lines=mergeOrphans(lines);
+  const text=lines.join("\n");const up=text.toUpperCase();
+  if(/FACTURA ELECTR/.test(up)){
+    const no=(text.match(/N[uú]mero de Factura:\s*([A-Za-z0-9-]+)/i)||[])[1]||"";
+    const fe=(text.match(/Fecha de Emisi[oó]n:\s*(\d{2})\/(\d{2})\/(\d{4})/i)||[]);const fecha=fe[3]?`${fe[3]}-${fe[2]}-${fe[1]}`:"";
+    const totLine=lines.filter(l=>/Total factura/i.test(l));const total=Math.max(0,...totLine.flatMap(moneyIn));
+    const cant=(lines.find(l=>/\bNIU\b/.test(l))||"").match(/NIU\s+([\d.,]+)/);
+    const desc=lines.filter(l=>/transporte|fruto|palma|alquiler|volqueta/i.test(l)).join(" ").replace(/\s+/g," ").slice(0,140);
+    const mesDesc=/MES D?\s?E?\s?(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)/i.test(desc.replace(/\s/g," "))?guessMonth(desc):null;
+    return {tipo:"factura",no,fecha,total,cant:cant?cant[1]:"",desc,mes:mesDesc||(fecha?guessMonth("",fecha+"T12:00"):null),name};
+  }
+  const tipo=/GASTOS/.test(up)?"gastos":/PRODUCIDO|INGRESOS/.test(up)?"ingresos":null;
+  let total=0;const totL=lines.filter(l=>/\bTOTAL\b/i.test(l));if(totL.length)total=Math.max(0,...moneyIn(totL[totL.length-1]));
+  const det=[];lines.forEach((l,ix)=>{if(/\bTOTAL\b/i.test(l))return;if(/^\s*TONELADA/i.test(lines[ix+1]||""))l=l+" TONELADAS";const lv=l.replace(/[\d.,]+\s*TONELADAS?/gi," t ").replace(/\b(?:A|X|a|x)\s*\$?\s*[\d.,]+/g," ").replace(/\$[\d.,]+\s*cada uno/gi," ");const v=moneyIn(lv);if(!v.length)return;const c=l.replace(MONEY_RE,"").replace(/[|:=]/g," ").replace(/\s+/g," ").trim();det.push({c:c||"(sin concepto)",v:v[v.length-1]})});
+  // líneas sin valor seguidas de valor sueltos (PDF de dos renglones)
+  return {tipo,total,det,mes:guessMonth(text),name};
+}
+let imported={};
+function importRender(){
+  const box=$("impOut");const parts=[];const fmtL=(r,lbl)=>{if(!r)return `<li><span class="pill warn">Falta</span> ${lbl}</li>`;
+    const s=r.det?sum(r.det.map(d=>d.v)):null;const diff=s!==null&&r.total&&Math.abs(s-r.total)>1;
+    return `<li><span class="pill good">Leído</span> <b>${lbl}</b>: ${fmt(r.total)}${r.mes?` · ${mk(r.mes,true)}`:""}${r.ocr?` <span class="small muted">(escaneado; revise las cifras)</span>`:""}${r.no?` · factura No. ${esc(r.no)}`:""}${r.cant?` · ${esc(r.cant)} t`:""}
+      ${diff&&!r.ocr?`<br><span class="small num-crit">Revise: las líneas que leí suman ${fmt(s)} y el total del PDF dice ${fmt(r.total)}. Puede ser un error en el PDF o una línea que leí mal.</span>`:""}${!diff&&r.det&&r.det.length?`<br><span class="small num-good">Las líneas cuadran con el total.</span>`:""}
+      ${r.det&&r.det.length?`<details><summary class="small muted">Ver ${r.det.length} líneas</summary><ul class="small">${r.det.map(d=>`<li>${esc(d.c)}: ${fmt(d.v)}</li>`).join("")}</ul></details>`:""}</li>`};
+  box.innerHTML=`<ul class="imp-list">${fmtL(imported.ingresos,"Ingresos (producido)")}${fmtL(imported.gastos,"Gastos")}${fmtL(imported.factura,"Factura de transporte de fruto")}</ul>`;
+}
+async function importFiles(files){
+  const msg=$("impMsg");msg.className="toast";
+  for(const f of files){msg.textContent=`Leyendo ${f.name}…`;
+    try{const {passes,ocr}=await pdfLines(f);
+      const cands=passes.filter(p=>p.length).map(p=>{const r=analyze(p,f.name);r.lines=p;const s=r.det?sum(r.det.map(d=>d.v)):0;r.score=(r.det&&r.total&&Math.abs(s-r.total)<=1?1000:0)+(r.total?10:0)+(r.det?r.det.length:0);return r});
+      cands.sort((a,b)=>b.score-a.score);const r=cands[0];r.ocr=ocr;
+      if(!r.tipo){msg.textContent=`No reconocí ${f.name}: no dice factura, gastos ni ingresos.`;msg.className="toast num-crit";continue}
+      imported[r.tipo]=r;}
+    catch(e){msg.textContent=e.message==="ocr"?"Ese PDF es una foto y no cargó el lector de imágenes; revise la conexión.":`No pude leer ${f.name}.`;msg.className="toast num-crit";return}}
+  importRender();
+  const set=(id,v)=>{if(v||v===0){$(id).value=v;touched.add(id)}};
+  const mes=(imported.ingresos||{}).mes||(imported.gastos||{}).mes||(imported.factura||{}).mes;
+  if(mes&&$("lMes").value!==mes){$("lMes").value=mes;mesManual=true;lastMes=mes;touched.clear();render()}
+  if(imported.ingresos)set("lProd",imported.ingresos.total);
+  if(imported.gastos)set("lGas",imported.gastos.total);
+  if(imported.factura){set("lFact",imported.factura.total);set("lFactNo",imported.factura.no)}
+  liqRender();
+  const n=Object.keys(imported).length;msg.textContent=n===3?"Listo: revise las cifras, copie el mensaje y cierre la liquidación.":`Leí ${n} de 3 archivos. Suba los que faltan.`;msg.className="toast "+(n===3?"num-good":"");
+}
+$("fPdf").addEventListener("change",e=>{const fs=[...e.target.files];e.target.value="";if(fs.length)importFiles(fs)});
+$("lMes").addEventListener("change",()=>{imported={};$("impOut").innerHTML=""});
+if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc=window.__PDF_WORKER||"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const ENC={"plain": {"ver": 1791408688, "data": {"registros": {"inv07": {"abonos": [{"fecha": "2026-09-28", "pago": "DJW", "valor": 480000}], "categoria": "reparacion", "creado": 0, "detalle": "Abono $480.000 el 28 sep; saldo $460.100. Faltan tambi\u00e9n el kit de 6 resortes del banco de v\u00e1lvulas. Oscar manda su 40%", "estado": "Abono", "fecha": "2026-09-28", "maquina": "bulldozer", "mes": "2026-09", "nota": "Gasket kit top (empaques parte superior)", "origen": "historial", "pago": "DJW", "proveedor": "Retrocapital (cot. 3413)", "tipo": "gasto", "valor": 940100}, "inv03": {"categoria": "reparacion", "creado": 0, "detalle": "", "estado": "Pagado", "fecha": "2026-05-23", "maquina": "bulldozer", "mes": "2026-05", "nota": "Bater\u00edas", "origen": "historial", "pago": "DJW", "proveedor": "", "tipo": "gasto", "valor": 1000000}, "inv01": {"categoria": "reparacion", "creado": 0, "detalle": "DJW abon\u00f3 $5.430.000 (60%) y asumi\u00f3 el resto; el 40% del socio ($3.620.000) se descont\u00f3 en la liquidaci\u00f3n de abril", "estado": "Pagado", "fecha": "2026-05-12", "maquina": "bulldozer", "mes": "2026-05", "nota": "Bomba y servo de transmisi\u00f3n", "origen": "historial", "pago": "DJW", "proveedor": "Agro-Cat (cot. 1080)", "tipo": "gasto", "valor": 9050000}, "inv02": {"categoria": "reparacion", "creado": 0, "detalle": "Lo pag\u00f3 Don Oscar. Ver ajuste de aceite en Por revisar", "estado": "Pagado", "fecha": "2026-05-23", "maquina": "bulldozer", "mes": "2026-05", "nota": "Aceite Max Diesel SAE 50 \u00b7 9 baldes \u00d7 $320.000", "origen": "historial", "pago": "Oscar", "proveedor": "", "tipo": "gasto", "valor": 2880000}, "inv06": {"categoria": "reparacion", "creado": 0, "detalle": "40% descontado en la liquidaci\u00f3n de junio", "estado": "Pagado", "fecha": "2026-07-04", "maquina": "bulldozer", "mes": "2026-07", "nota": "Balinera, ring y sellos", "origen": "historial", "pago": "DJW", "proveedor": "Agro-Cat (remisi\u00f3n 1045)", "tipo": "gasto", "valor": 1331000}, "inv04": {"categoria": "reparacion", "creado": 0, "detalle": "Transferencia 17 jun; 40% descontado en la liquidaci\u00f3n de mayo", "estado": "Pagado", "fecha": "2026-06-17", "maquina": "bulldozer", "mes": "2026-06", "nota": "Discos, pacas de embrague, kits de sellos, rodamiento, resortes", "origen": "historial", "pago": "DJW", "proveedor": "Retrocapital (cot. 3112)", "tipo": "gasto", "valor": 5939882}, "inv05": {"abonos": [{"fecha": "2026-06-05", "pago": "DJW", "valor": 1000000}, {"fecha": "2026-06-30", "pago": "DJW", "valor": 1600000}], "categoria": "reparacion", "creado": 0, "detalle": "Pagado $2.600.000 (incluye anticipo de $1.000.000 el 5 jun). Saldo $1.100.000 al entregar la m\u00e1quina trabajando. El 40% de Oscar ($1.480.000) ya se descont\u00f3 completo en la liquidaci\u00f3n de mayo", "estado": "Abono", "fecha": "2026-06-30", "maquina": "bulldozer", "mes": "2026-06", "nota": "Mano de obra mec\u00e1nico", "origen": "historial", "pago": "DJW", "proveedor": "", "tipo": "gasto", "valor": 3700000}, "inv08": {"categoria": "reparacion", "creado": 0, "detalle": "$3.600.000 + transporte ~$470.000. El 40% de Oscar ($1.628.000) no se ha cruzado. Devuelto por garant\u00eda el 22 ago", "estado": "Por cruzar", "fecha": "2026-08-13", "maquina": "bulldozer", "mes": "2026-08", "nota": "Reparaci\u00f3n del convertidor de torque (taller en Bogot\u00e1, Puente Aranda) + transporte", "origen": "historial", "pago": "DJW", "proveedor": "Taller convertidores, Bogot\u00e1", "tipo": "gasto", "valor": 4070000}}, "facturas": {"913": {"cantidad": "36,09 t \u00d7 $88.000 + $2.000.000", "concepto": "Fruta Balsora \u2192 Gran Sin\u00fa + 1 d\u00eda de volqueta", "fecha": "2026-08-12", "no": "913", "valor": 5175920}, "891": {"cantidad": "111,95 t \u00d7 $88.000", "concepto": "Fruta finca Balsora \u2192 Lorica, junio", "fecha": "2026-07-18", "no": "891", "valor": 9851600}, "915": {"cantidad": "2 \u00d7 $2.000.000", "concepto": "2 d\u00edas de alquiler de volqueta doble troque", "fecha": "2026-08-12", "no": "915", "valor": 4000000}, "868": {"cantidad": "220,01 t \u00d7 $88.000", "concepto": "Fruta Tol\u00fa Viejo \u2192 Gran Sin\u00fa, mayo", "fecha": "2026-06-11", "no": "868", "valor": 19360880}, "937": {"cantidad": "17,70 t \u00d7 $88.000", "concepto": "Fruta de palma, agosto", "fecha": "2026-09-10", "no": "937", "valor": 1557600}, "846": {"cantidad": "250,39 t \u00d7 $88.000", "concepto": "Fruta Tol\u00fa Viejo \u2192 Lorica y Mar\u00eda la Baja, abril", "fecha": "2026-05-05", "no": "846", "valor": 22034320}}, "meses": {"2026-08": {"detalle": [{"c": "4 llantas 295", "v": 4992000}, {"c": "Combustible Mar\u00eda la Baja \u2013 Lorica", "v": 4844000}, {"c": "4 cambios de llantas", "v": 100000}, {"c": "2 engrases", "v": 80000}, {"c": "2 lavados", "v": 140000}, {"c": "ACPM Tol\u00fa", "v": 320000}, {"c": "Peajes", "v": 1470000}, {"c": "Otros varios", "v": 427000}], "fuente": "Reporte Don Oscar", "gastos": {"acpm": 5164000, "ayudante": 0, "conductor": 0, "llantas": 5092000, "mant": 647000, "peajes": 1470000}, "ingresos": {"alq": 0, "bal": 1557600, "mar": 18729900, "var": 2400000, "zona": 0}, "mes": "2026-08", "toneladas": {"bal": 17.7, "mar": 267.57, "zona": 0}}, "2026-06": {"detalle": [{"c": "ACPM", "v": 2529000}, {"c": "Cargadores 9 viajes", "v": 1080000}, {"c": "Conductor 9 viajes", "v": 1080000}, {"c": "Peajes", "v": 630000}, {"c": "Gastos varios", "v": 1838000}, {"c": "Sacadora, accesorios y otros", "v": 1317000}], "fuente": "Reporte Don Oscar", "gastos": {"acpm": 2529000, "ayudante": 1080000, "conductor": 1080000, "llantas": 0, "mant": 3155000, "peajes": 630000}, "ingresos": {"alq": 0, "bal": 9851600, "mar": 5476100, "var": 2500000, "zona": 0}, "mes": "2026-06", "toneladas": {"bal": 111.95, "mar": 78.23, "zona": 0}}, "2026-04": {"detalle": [{"c": "Pago de cargadores 17 viajes", "v": 2040000}, {"c": "Cargadores Mar\u00eda la Baja", "v": 113000}, {"c": "ACPM", "v": 6571062}, {"c": "Gastos varios, tierra y arreglos", "v": 1377000}, {"c": "1 muelle", "v": 1050000}, {"c": "Segunda cuota de llantas", "v": 1328000}, {"c": "Conductor viajes Tol\u00fa", "v": 2040000}, {"c": "Conductor Mar\u00eda la Baja \u2013 Lorica", "v": 1400000}, {"c": "Conductor extractora Mar\u00eda la Baja", "v": 84000}], "fuente": "Reporte Don Oscar", "gastos": {"acpm": 6571062, "ayudante": 2153000, "conductor": 3524000, "llantas": 1328000, "mant": 2427000, "peajes": 0}, "ingresos": {"alq": 0, "bal": 22034320, "mar": 7789600, "var": 2800000, "zona": 555800}, "mes": "2026-04", "toneladas": {"bal": 250.39, "mar": 111.28, "zona": 16.12}}, "2026-05": {"detalle": [{"c": "Ayudante 18 viajes \u00d7 $120.000", "v": 2160000}, {"c": "Conductor 18 viajes \u00d7 $120.000", "v": 2160000}, {"c": "Materiales para la finca", "v": 599000}, {"c": "Cuota llantas", "v": 1328000}, {"c": "ACPM", "v": 6831215}, {"c": "Peajes y otros Mar\u00eda la Baja \u2013 Lorica", "v": 1535000}, {"c": "Gastos varios, repuestos y otros", "v": 2027256}], "fuente": "Reporte Don Oscar", "gastos": {"acpm": 6831215, "ayudante": 2160000, "conductor": 2160000, "llantas": 1328000, "mant": 2626256, "peajes": 1535000}, "ingresos": {"alq": 0, "bal": 19360880, "mar": 6822200, "var": 3200000, "zona": 0}, "mes": "2026-05", "toneladas": {"bal": 220.01, "mar": 97.46, "zona": 0}}, "2026-07": {"detalle": [{"c": "ACPM", "v": 1388317}, {"c": "Arreglo freno de motor", "v": 800000}, {"c": "Peajes", "v": 105000}, {"c": "Conductor y cargue Balsora", "v": 720000}, {"c": "1 llanta 295", "v": 1152000}, {"c": "4 arreglos de llantas", "v": 100000}, {"c": "Conductor Mar\u00eda la Baja \u2013 Lorica", "v": 1400000}, {"c": "14 peajes", "v": 735000}, {"c": "Combustible Mar\u00eda la Baja \u2013 Lorica", "v": 2470243}], "fuente": "Reporte Don Oscar", "gastos": {"acpm": 3858560, "ayudante": 0, "conductor": 2120000, "llantas": 1252000, "mant": 800000, "peajes": 840000}, "ingresos": {"alq": 6000000, "bal": 3175920, "mar": 8423800, "var": 2000000, "zona": 0}, "mes": "2026-07", "toneladas": {"bal": 36.09, "mar": 120.34, "zona": 0}}}, "liquidaciones": {"2026-08": {"comp": "Gir\u00f3 15 sep ($1.601.700 + $3.000.000)", "det": "Se tom\u00f3 la fruta de Balsora por $1.587.000; la factura 937 es por $1.557.600", "djw": 6188700, "dozer": 0, "fact": 1587000, "fechaCruce": "2026-09-15", "mes": "2026-08", "otros": 0, "saldo": -4601700}, "2026-06": {"comp": "Consignado jul", "det": "40% repuestos Agro-Cat remisi\u00f3n 1045", "djw": 5612220, "dozer": -532400, "fact": 9851600, "fechaCruce": "2026-07-18", "mes": "2026-06", "otros": 0, "saldo": 3706980}, "2026-04": {"comp": "Consignado 21 may", "det": "40% bomba y servo de transmisi\u00f3n", "djw": 10350930, "dozer": -3620000, "fact": 22034320, "fechaCruce": "2026-05-21", "mes": "2026-04", "otros": 0, "saldo": 8063390}, "2026-05": {"comp": "Consignado 30 jun", "det": "40% Retrocapital ($2.375.953) y mec\u00e1nico ($1.480.000); +$752.000 saldo aceite a favor de Oscar", "djw": 7645566, "dozer": -3855953, "fact": 19360880, "fechaCruce": "2026-06-30", "mes": "2026-05", "otros": 752000, "saldo": 8611362}, "2026-07": {"comp": "Consignado 14 ago", "det": "Facturas 913 y 915: fruta Balsora + 3 d\u00edas de alquiler", "djw": 6437496, "dozer": 0, "fact": 9175920, "fechaCruce": "2026-08-14", "mes": "2026-07", "otros": 0, "saldo": 2738424}}, "tiquetes": {"t21": {"fecha": "2026-07-10", "kg": 8720}, "t06": {"fecha": "2026-05-14", "kg": 11531}, "t08": {"fecha": "2026-05-15", "kg": 14900}, "t13": {"fecha": "2026-05-29", "kg": 12530}, "t01": {"fecha": "2026-05-05", "kg": 13610}, "t19": {"fecha": "2026-06-30", "kg": 13760}, "t18": {"fecha": "2026-06-25", "kg": 14490}, "t23": {"fecha": "2026-08-28", "kg": 4910}, "t10": {"fecha": "2026-05-21", "kg": 12610}, "t07": {"fecha": "2026-05-15", "kg": 14173}, "t16": {"fecha": "2026-06-18", "kg": 13360}, "t22": {"fecha": "2026-07-28", "kg": 14370}, "t04": {"fecha": "2026-05-13", "kg": 14250}, "t09": {"fecha": "2026-05-20", "kg": 14830}, "t02": {"fecha": "2026-05-06", "kg": 13390}, "t20": {"fecha": "2026-07-06", "kg": 13000}, "t14": {"fecha": "2026-06-02", "kg": 10730}, "t11": {"fecha": "2026-05-22", "kg": 14326}, "t03": {"fecha": "2026-05-09", "kg": 14220}, "t17": {"fecha": "2026-06-20", "kg": 15340}, "t15": {"fecha": "2026-06-13", "kg": 15450}, "t12": {"fecha": "2026-05-25", "kg": 14620}, "t05": {"fecha": "2026-05-13", "kg": 14170}}, "notas": {"n06": {"estado": "info", "orden": 6, "texto": "El 26 de septiembre usted pag\u00f3 una llanta con rin encontrada en la finca. A Don Oscar le parece cara: las m\u00e1s caras han salido a $1.200.000\u2013$1.300.000 y propuso ofrecer $800.000. Si queda como repuesto de la volqueta, reg\u00edstrela como gasto de septiembre pagado por usted para que se le reintegre del producido.", "titulo": "Llanta con rin para la volqueta: $1.250.000 que usted ya abon\u00f3"}, "n05": {"estado": "info", "orden": 5, "texto": "El 25 de septiembre las pruebas dieron buenas presiones en la bomba, la transmisi\u00f3n y el convertidor. Faltan el kit de 6 resortes y unos empaques met\u00e1licos del banco de v\u00e1lvulas. Retrocapital cotiz\u00f3 el gasket kit (No. 3413, $940.100) y usted abon\u00f3 $480.000 el 28 de septiembre. Don Oscar dijo que manda su parte (40% = $376.040). Usted estar\u00e1 en la finca la semana del 5 de octubre para las pruebas.", "titulo": "Bulldozer: faltan resortes y empaques del banco de v\u00e1lvulas"}, "n10": {"estado": "info", "orden": 10, "texto": "El 3 de junio hablaron de hacer el cambio de servicio apenas el Ministerio lo habilite. Costo estimado: $500.000 a $600.000. Sigue pendiente.", "titulo": "Tr\u00e1mite para pasar la volqueta de servicio particular a p\u00fablico"}, "n03": {"estado": "warn", "orden": 3, "texto": "Utilidad de abril: $33.179.720 \u2212 $16.003.062 = $17.176.658; el 60% es $10.305.995. Parece un error al digitar: se consignaron unos $44.935 de menos. En los audios no hay nada que lo cambie.", "titulo": "Abril: su 60% qued\u00f3 en $10.350.930 y deb\u00eda ser $10.305.995"}, "n11": {"estado": "ok", "orden": 11, "texto": "Confirmado en audio el 12 de agosto: se factur\u00f3 a JW SAS (facturas 913 y 915) y se cruz\u00f3 como transporte de fruta.", "titulo": "Alquiler de la volqueta en la finca: 3 d\u00edas a $2.000.000"}, "n09": {"estado": "info", "orden": 9, "texto": "Los dem\u00e1s meses hay entre $1 M y $3,5 M de conductor. Si hay un pago pendiente, bajar\u00eda la utilidad de agosto.", "titulo": "Agosto no tiene pago de conductor ni de cargue"}, "n12": {"estado": "ok", "orden": 12, "texto": "El 2 de julio Don Oscar acept\u00f3 pagar el 40% de lo que falt\u00f3 en el pedido de Retrocapital. Se descontaron $532.400 en la liquidaci\u00f3n de junio.", "titulo": "Repuestos faltantes de julio (balinera, ring, sellos)"}, "n04": {"estado": "warn", "orden": 4, "texto": "Por eso Don Oscar gir\u00f3 $29.400 de menos. Junto con lo de abril, la diferencia neta es de unos $15.500 a favor de Oscar, sin contar lo del aceite.", "titulo": "Agosto: se descont\u00f3 la fruta de Balsora por $1.587.000; la factura 937 dice $1.557.600"}, "n02": {"estado": "warn", "orden": 2, "texto": "Don Oscar pag\u00f3 9 baldes de aceite Mobil ($2.880.000) y usted las 2 bater\u00edas (unos $500.000 cada una, $1.000.000). En el audio del 23 de mayo usted propuso partir el saldo por porcentajes. El 30 de junio \u00e9l pidi\u00f3 descontar bater\u00eda y aceites. Al socio le toca el 40% de ambos ($1.552.000); como puso $2.880.000, se le deb\u00edan $1.328.000. En la liquidaci\u00f3n de mayo se le reconocieron $752.000 y \u00e9l acept\u00f3 el total, pero la cuenta correcta deja $576.000 a su favor.", "titulo": "Aceite y bater\u00edas del bulldozer: posible saldo de $576.000 a favor de Don Oscar"}, "n00": {"estado": "warn", "orden": 0, "texto": "Al 7 de octubre Oscar le debe $804.000 por el bulldozer. Cuando se paguen el saldo del mec\u00e1nico ($1.100.000) y del gasket kit ($460.100), sube a $1.428.040, m\u00e1s el 40% de los extras del convertidor y el banco de v\u00e1lvulas. La pesta\u00f1a Cuenta con Oscar lo recalcula con cada abono, pago y liquidaci\u00f3n.", "titulo": "El saldo vivo con Don Oscar est\u00e1 en la pesta\u00f1a Cuenta con Oscar"}, "n01": {"estado": "warn", "orden": 1, "texto": "Seg\u00fan su nota del 14 de agosto, la reparaci\u00f3n en Bogot\u00e1 cost\u00f3 $3.600.000 m\u00e1s unos $470.000 de transporte ($320.000 y $150.000). Don Oscar pregunt\u00f3 ese mismo d\u00eda si ya hab\u00eda sacado su porcentaje, y usted dijo que esperar\u00eda a ver el aparato trabajando. El 22 de agosto se devolvi\u00f3 por garant\u00eda. El 40% de $4.070.000 son $1.628.000: c\u00f3brelo en la pr\u00f3xima liquidaci\u00f3n o cuando quede listo, como acordaron.", "titulo": "Convertidor de torque: falta cruzar el 40% de Don Oscar (unos $1.628.000)"}, "n07": {"estado": "info", "orden": 7, "texto": "El 25 de mayo Don Oscar cont\u00f3 que al cruzar la batea se revent\u00f3 una bombona nueva y se parti\u00f3 la base de la bomba del cami\u00f3n. Ese arreglo pudo quedar en 'gastos varios' de mayo. El resane de la batea (cemento y arena) es un gasto de la finca, no de la volqueta. Conviene confirmar que no se carg\u00f3 a la sociedad.", "titulo": "Da\u00f1o en la batea de la finca"}, "n08": {"estado": "info", "orden": 8, "texto": "Si son materiales de la finca, Don Oscar estar\u00eda pagando el 40% ($239.600). Pudo ser el cemento y la arena de la batea. En los audios no queda claro.", "titulo": "Mayo: $599.000 de materiales para la finca cargados a la volqueta"}}}}};
+const LS="djw-maquinaria-v1",LSPW="djw-maquinaria-pw";
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function decryptBase(pw){const k0=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
+  const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:b64(ENC.s),iterations:ENC.n,hash:"SHA-256"},k0,{name:"AES-GCM",length:256},false,["decrypt"]);
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(ENC.i)},key,b64(ENC.c));return JSON.parse(new TextDecoder().decode(pt))}
+const clone=o=>JSON.parse(JSON.stringify(o));
+function localDB(base){
+  let st=null;try{st=JSON.parse(localStorage.getItem(LS)||"null")}catch(e){}
+  if(!st||!st.data)st={baseVer:base.ver,data:clone(base.data),mod:{}};
+  else if((st.baseVer||0)<base.ver){for(const c in base.data)for(const id in base.data[c]){if(!st.mod[c+"/"+id])(st.data[c]=st.data[c]||{})[id]=clone(base.data[c][id])}st.baseVer=base.ver}
+  const subs={};const save=()=>{try{localStorage.setItem(LS,JSON.stringify(st))}catch(e){$("dbBanner").hidden=false;$("dbBanner").textContent="No se pudo guardar en este dispositivo: el almacenamiento está lleno o bloqueado."}};
+  save();
+  const snap=c=>({docs:Object.entries(st.data[c]||{}).map(([id,d])=>({id,exists:true,data:()=>d}))});
+  const fire=c=>{save();(subs[c]||[]).forEach(f=>f(snap(c)))};
+  const ref=(c,id)=>({id,path:c+"/"+id,
+    get:async()=>{const d=(st.data[c]||{})[id];return {id,exists:!!d,data:()=>d}},
+    set:async d=>{(st.data[c]=st.data[c]||{})[id]=clone(d);st.mod[c+"/"+id]=1;fire(c)},
+    update:async d=>{if(!(st.data[c]||{})[id])throw {code:"invalid_argument"};st.data[c][id]={...st.data[c][id],...clone(d)};st.mod[c+"/"+id]=1;fire(c)},
+    delete:async()=>{if(st.data[c])delete st.data[c][id];st.mod[c+"/"+id]=1;fire(c)}});
+  return {state:()=>st,doc:p=>{const [c,id]=p.split("/");return ref(c,id)},
+    collection:c=>({onSnapshot:f=>{(subs[c]=subs[c]||[]).push(f);setTimeout(()=>f(snap(c)),0);return()=>{}},
+      add:async d=>{const id="L"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await ref(c,id).set(d);return ref(c,id)},doc:id=>ref(c,id)}),
+    replace:data=>{st={baseVer:st.baseVer,data:clone(data),mod:{}};for(const c in data)for(const id in data[c])st.mod[c+"/"+id]=1;Object.keys(subs).forEach(fire)}};
+}
+function start(base){
+  db=localDB(base);$("lock").hidden=true;
+  const listen=(col,fn)=>db.collection(col).onSnapshot(s=>{fn(s);S.ready=true;render();dataInfo()});
+  listen("meses",s=>{S.meses={};s.docs.forEach(d=>S.meses[d.id]=d.data())});
+  listen("liquidaciones",s=>{S.liq={};s.docs.forEach(d=>S.liq[d.id]=d.data())});
+  listen("facturas",s=>{S.fact=s.docs.map(d=>d.data())});
+  listen("tiquetes",s=>{S.tiq=s.docs.map(d=>d.data())});
+  listen("notas",s=>{S.notas=s.docs.map(d=>d.data())});
+  listen("registros",s=>{S.reg=s.docs.map(d=>({...d.data(),_id:d.id}))});
+}
+async function unlock(pw,remember){try{const base=await decryptBase(pw);if(remember){try{localStorage.setItem(LSPW,pw)}catch(e){}}start(base);return true}catch(e){return false}}
+$("fLock").addEventListener("submit",async e=>{e.preventDefault();$("lockMsg").textContent="Abriendo…";$("lockMsg").className="toast";
+  const ok=await unlock($("pw").value,$("rememberPw").checked);if(!ok){$("lockMsg").textContent="Clave incorrecta.";$("lockMsg").className="toast num-crit";$("pw").select()}});
+if(ENC.plain)start(ENC.plain);else (async()=>{let pw=null;try{pw=localStorage.getItem(LSPW)}catch(e){}if(pw&&!(await unlock(pw,false))){try{localStorage.removeItem(LSPW)}catch(e){}}})();
+
+/* ---------- datos: excel, respaldo ---------- */
+function dataInfo(){const st=db&&db.state();if(!st)return;const n=Object.values(st.data).reduce((a,c)=>a+Object.keys(c).length,0);const m=Object.keys(st.mod||{}).length;
+  $("dataInfo").textContent=`${n} documentos en este dispositivo · ${m} creados o cambiados aquí.`}
+function saveFile(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+const today=()=>new Date(Date.now()-5*3600e3).toISOString().slice(0,10);
+$("bBackup").addEventListener("click",()=>{const st=db.state();saveFile(`respaldo-brigadier-d5h-${today()}.json`,new Blob([JSON.stringify({app:"brigadier-d5h",fecha:today(),data:st.data},null,1)],{type:"application/json"}));$("dataMsg").textContent="Respaldo descargado.";$("dataMsg").className="toast num-good"});
+$("fImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(j.app!=="brigadier-d5h"||!j.data)throw 0;
+    const b=$("bBackup");$("dataMsg").innerHTML=`Respaldo del ${esc(j.fecha)}. <button class="btn danger" id="bConfirmImp" type="button">Reemplazar los datos de este dispositivo</button>`;
+    $("bConfirmImp").addEventListener("click",()=>{db.replace(j.data);$("dataMsg").textContent="Datos cargados.";$("dataMsg").className="toast num-good"})}
+  catch(err){$("dataMsg").textContent="Ese archivo no es un respaldo de esta aplicación.";$("dataMsg").className="toast num-crit"}e.target.value=""};r.readAsText(f)});
+$("bLock").addEventListener("click",()=>{try{localStorage.removeItem(LSPW)}catch(e){}location.reload()});
+$("bReset").addEventListener("click",()=>{const b=$("bReset");if(!b.dataset.armed){b.dataset.armed=1;b.textContent="¿Seguro? Se pierden los cambios no respaldados. Toque otra vez";b.className="btn danger";setTimeout(()=>{delete b.dataset.armed;b.textContent="Borrar cambios de este dispositivo";b.className="btn ghost"},5000);return}
+  try{localStorage.removeItem(LS)}catch(e){}location.reload()});
+$("bXlsx").addEventListener("click",()=>{if(!window.XLSX){$("dataMsg").textContent="No cargó la herramienta de Excel; revise la conexión.";return}
+  const wb=XLSX.utils.book_new();const add=(n,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows.length?rows:[{}]),n);
+  const MM=monthModel();
+  add("Resumen mensual",MM.map(x=>({Mes:mk(x.m,true),Fuente:x.src,Producido:Math.round(sum(x.ing)),Gastos:Math.round(sum(x.gas)),Utilidad:Math.round(sum(x.ing)-sum(x.gas)),"DJW 60%":Math.round((sum(x.ing)-sum(x.gas))*.6),"Oscar 40%":Math.round((sum(x.ing)-sum(x.gas))*.4)})));
+  const C=cuentaModel();add("Cuenta con Oscar",C.movs.map(m=>({Fecha:m.fecha,Movimiento:m.c,Efecto:Math.round(m.v),Saldo:Math.round(m.acc)})));
+  add("Pendientes",C.pend.map(({g,falta})=>({Concepto:g.nota,Proveedor:g.proveedor||"",Total:g.valor,Pagado:g.valor-falta,Falta:falta,"40% Oscar":Math.round(falta*.4)})));
+  add("Liquidaciones",Object.entries(S.liq).sort().map(([m,l])=>({Mes:m,Factura:l.fact,"DJW 60%":l.djw,"Bulldozer":l.dozer||0,Ajustes:(l.otros||0)+(l.ajuste||0)-(l.reintegro||0),Saldo:l.saldo,Detalle:(l.comp||"")+" "+(l.det||"")})));
+  add("Registros",[...S.reg].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")).map(r=>({Fecha:r.fecha,Tipo:r.tipo,Maquina:r.maquina,Categoria:r.categoria||r.trabajo||r.cuenta||"",Valor:r.valor,Pagado:Array.isArray(r.abonos)?sum(r.abonos.map(a=>a.valor)):"",Quien:r.pago||r.dir||"",Estado:r.estado||"",Nota:r.nota||"",Proveedor:r.proveedor||""})));
+  add("Facturas",S.fact.map(f=>({No:f.no,Fecha:f.fecha,Concepto:f.concepto,Cantidad:f.cantidad,Valor:f.valor})));
+  XLSX.writeFile(wb,`cuentas-brigadier-d5h-${today()}.xlsx`)});
+</script>
+</body>
+</html>
