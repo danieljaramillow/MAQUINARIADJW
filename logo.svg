@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="DJW volqueta y bulldozer">
+  <rect width="512" height="512" rx="104" fill="#0f1113"/>
+  <!-- ground -->
+  <rect x="40" y="318" width="432" height="5" rx="2.5" fill="#2b3036"/>
+
+  <!-- BULLDOZER (left, facing left) -->
+  <g fill="#d95926">
+    <!-- blade -->
+    <path d="M38 214 Q24 266 40 318 L64 318 Q52 266 64 214 Z" fill="#b8461a"/>
+    <!-- push arm -->
+    <rect x="58" y="282" width="56" height="10" rx="3"/>
+    <!-- body / engine -->
+    <path d="M96 232 L176 232 L176 280 L96 280 Z"/>
+    <rect x="114" y="198" width="9" height="34" rx="2" fill="#a3a9b0"/>
+    <!-- cab -->
+    <rect x="168" y="168" width="78" height="10" rx="3"/>
+    <rect x="174" y="176" width="66" height="104" rx="4"/>
+    <rect x="184" y="186" width="46" height="36" rx="3" fill="#0f1113"/>
+    <!-- ripper -->
+    <path d="M240 262 L262 262 L270 306 L260 308 Z" fill="#b8461a"/>
+  </g>
+  <!-- track -->
+  <rect x="78" y="280" width="176" height="38" rx="19" fill="#181b1f" stroke="#d95926" stroke-width="6"/>
+  <g fill="#d95926"><circle cx="100" cy="299" r="9"/><circle cx="138" cy="299" r="9"/><circle cx="176" cy="299" r="9"/><circle cx="214" cy="299" r="9"/><circle cx="234" cy="299" r="9"/></g>
+
+  <!-- VOLQUETA doble troque (right, facing right) -->
+  <g stroke="#0f1113" stroke-width="8" paint-order="stroke">
+    <!-- dump bed -->
+    <path d="M252 196 L392 196 L388 268 L258 268 Z" fill="#3987e5"/>
+    <!-- chassis -->
+    <rect x="252" y="266" width="226" height="13" rx="3" fill="#a3a9b0"/>
+    <!-- cab -->
+    <path d="M394 186 L436 186 Q442 186 442 192 L442 270 L394 270 Z" fill="#3987e5"/>
+    <!-- hood (conventional nose) -->
+    <path d="M440 222 L470 226 Q480 228 480 238 L480 270 L440 270 Z" fill="#3987e5"/>
+  </g>
+  <g fill="#0f1113">
+    <rect x="270" y="210" width="6" height="50" rx="2" opacity=".35"/><rect x="304" y="210" width="6" height="50" rx="2" opacity=".35"/><rect x="338" y="210" width="6" height="50" rx="2" opacity=".35"/>
+    <rect x="402" y="196" width="32" height="30" rx="3"/>
+  </g>
+  <rect x="472" y="246" width="10" height="6" rx="2" fill="#e6b04f"/>
+  <!-- wheels: 1 front + 2 rear (doble troque) -->
+  <g stroke="#eceff2" stroke-width="7" fill="#0f1113">
+    <circle cx="300" cy="294" r="22"/><circle cx="352" cy="294" r="22"/><circle cx="452" cy="294" r="22"/>
+  </g>
+  <g fill="#a3a9b0"><circle cx="300" cy="294" r="7"/><circle cx="352" cy="294" r="7"/><circle cx="452" cy="294" r="7"/></g>
+
+  <!-- DJW -->
+  <g fill="none" stroke="#eceff2" stroke-width="24" stroke-linejoin="miter" stroke-linecap="butt">
+    <path d="M128 366 V446 H160 Q204 446 204 406 Q204 366 160 366 Z"/>
+    <path d="M286 366 V418 Q286 446 258 446 Q236 446 230 428"/>
+    <path d="M312 360 L334 444 L358 394 L382 444 L404 360" stroke-linejoin="round"/>
+  </g>
+  <rect x="128" y="470" width="274" height="5" rx="2.5" fill="#6da7ec"/>
+</svg>
