@@ -269,7 +269,7 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
         <label for="lAjNota">Nota del ajuste<input id="lAjNota" type="text" autocomplete="off"></label>
       </form>
       <div class="liq-out" id="liqOut"></div>
-      <div class="actions"><button class="btn" id="lRep" type="button">Reporte PDF para Don Oscar</button><button class="btn ghost" id="lCopy" type="button">Copiar mensaje de WhatsApp</button><button class="btn ghost" id="lClose" type="button">Cerrar liquidación</button><span class="toast" id="lToast" role="status"></span></div>
+      <div class="actions"><button class="btn" id="lSaveEd" type="button" hidden>Guardar detalle del mes</button><button class="btn" id="lRep" type="button">Reporte PDF para Don Oscar</button><button class="btn ghost" id="lCopy" type="button">Copiar mensaje de WhatsApp</button><button class="btn ghost" id="lClose" type="button">Cerrar liquidación</button><span class="toast" id="lToast" role="status"></span></div>
       <pre class="msg" id="lMsg"></pre>
     </div>
     <div class="card">
@@ -870,7 +870,7 @@ function renderED(){const E=edCur();const box=$("edBox");if(!E){box.innerHTML=""
   if($("edUndo"))$("edUndo").addEventListener("click",()=>{delete EDS[E.m];touched.delete("lProd");touched.delete("lGas");edShown="";render()});
   edTotals();edWarnRender();
 }
-function edTotals(){const E=edCur();if(!E||!$("edTI"))return;const ti=sum(E.ing.map(d=>d.v)),tg=sum(E.gas.map(d=>d.v));
+function edTotals(){const E=edCur();$("lSaveEd").hidden=!(E&&E.dirty);if(E)$("lSaveEd").textContent="Guardar detalle de "+mk(E.m,true);if(!E||!$("edTI"))return;const ti=sum(E.ing.map(d=>d.v)),tg=sum(E.gas.map(d=>d.v));
   $("edTI").textContent=fmt(ti);$("edTG").textContent=fmt(tg);
   const chk=(el,pdf,s)=>{$(el).innerHTML=pdf&&s?(Math.abs(pdf-s)>1?`<span class="num-crit">El total del PDF dice ${fmt(pdf)} y las líneas suman ${fmt(s)} (diferencia ${fmt(Math.abs(s-pdf))}). Corrija la línea que no cuadra o confírmelo con Don Oscar.</span>`:`<span class="num-good">Cuadra con el total del PDF.</span>`):""};
   chk("edCI",E.pdfIng,ti);chk("edCG",E.pdfGas,tg)}
@@ -894,7 +894,7 @@ async function edSave(){const E=edCur();const t=$("edToast");
   try{await db.doc("meses/"+m).set({...old,mes:m,fuente:"Reporte Don Oscar",ingresos:byCat(ING,ing),gastos:byCat(GAS,gas),toneladas:ton,toneladasEstimadas:est,
       detalleIng:ing.map(d=>({c:d.c.trim()||"(sin concepto)",v:Math.round(d.v),cat:d.cat})),detalle:gas.map(d=>({c:d.c.trim()||"(sin concepto)",v:Math.round(d.v),cat:d.cat})),pdfIng:E.pdfIng||null,pdfGas:E.pdfGas||null,guardado:today()});
     delete EDS[m];touched.delete("lProd");touched.delete("lGas");edShown="";render();
-    $("edToast").textContent=`Guardado en ${mk(m,true)}.`;$("edToast").className="toast num-good"}
+    $("edToast").textContent=`Guardado en ${mk(m,true)}.`;$("edToast").className="toast num-good";$("lToast").textContent=`Detalle guardado en ${mk(m,true)}.`;$("lToast").className="toast num-good";setTimeout(()=>$("lToast").textContent="",5000)}
   catch(e){t.textContent="No se guardó. Intente de nuevo.";t.className="toast num-crit"}}
 function factEstimada(L){if(!L.m||!L.fact)return false;
   if(S.liq[L.m]||imported.factura)return false;const E=edCur();const bal=Math.round(sum((E?E.ing:[]).filter(d=>d.cat==="bal").map(d=>d.v)));return bal>0&&Math.round(L.fact)===bal}
@@ -963,7 +963,8 @@ function repOpen(){const L=liqCalc();const msg=$("lToast");
   repCur=repModel();$("repName").textContent=repCur.file;$("repBody").innerHTML=repHtml(repCur);$("repMsg").textContent="";$("rep").hidden=false}
 async function repFile(){$("repMsg").textContent="Armando el PDF…";$("repMsg").className="toast";
   const blob=await repPdf(repCur);return new File([blob],repCur.file,{type:"application/pdf"})}
-$("lRep").addEventListener("click",repOpen);
+$("lRep").addEventListener("click",async()=>{const E=edCur();if(E&&E.dirty)await edSave();repOpen()});
+$("lSaveEd").addEventListener("click",edSave);
 $("repClose").addEventListener("click",()=>{$("rep").hidden=true});
 $("repDl").addEventListener("click",async()=>{try{const f=await repFile();saveFile(f.name,f);$("repMsg").textContent="PDF descargado.";$("repMsg").className="toast num-good"}catch(e){$("repMsg").textContent="No cargó la herramienta de PDF; revise la conexión.";$("repMsg").className="toast num-crit"}});
 $("repShare").addEventListener("click",async()=>{let f;try{f=await repFile()}catch(e){$("repMsg").textContent="No cargó la herramienta de PDF; revise la conexión.";$("repMsg").className="toast num-crit";return}
