@@ -253,7 +253,7 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
       <div id="pendBox"></div>
     </div>
     <div class="card">
-      <div class="card-head"><h3>Liquidar un mes</h3><span class="small muted">Suba los PDF de Don Oscar, revise el detalle y escoja el mes al que corresponden</span></div>
+      <div class="card-head"><h3>Liquidar un mes</h3><span class="small muted">Solo la volqueta. El bulldozer se lleva aparte, arriba, hasta que produzca.</span></div>
       <div class="upload"><label class="btn" for="fPdf" style="cursor:pointer">Subir PDFs de Don Oscar<input id="fPdf" type="file" accept="application/pdf,.pdf" multiple hidden></label><span class="small muted">La factura, el resumen de ingresos y el de gastos. Puede subirlos juntos o uno por uno.</span><span class="toast" id="impMsg" role="status"></span></div>
       <div class="form"><label for="lMes">Mes al que corresponden los reportes<input id="lMes" type="month"></label></div>
       <div id="impOut"></div>
@@ -264,7 +264,7 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
         <label for="lFact">Factura de transporte de fruto (JW SAS)<input id="lFact" type="number" inputmode="numeric" min="0"><span class="small" id="lFactHint" style="color:var(--warn)"></span></label>
         <label for="lFactNo">No. de factura<input id="lFactNo" type="text" inputmode="numeric" autocomplete="off"></label>
         <label for="lReint">Gastos de la volqueta que pagó usted<input id="lReint" type="number" inputmode="numeric" min="0"></label>
-        <label for="lCruce">Descontar a Oscar por el bulldozer (opcional)<input id="lCruce" type="number" inputmode="numeric" placeholder="0: el bulldozer va aparte"></label>
+        <label for="lCruce" hidden>Descontar a Oscar por el bulldozer<input id="lCruce" type="number" inputmode="numeric" value="0"></label>
         <label for="lAj">Otros ajustes (+ a su favor, − a favor de Oscar)<input id="lAj" type="number" inputmode="numeric"></label>
         <label for="lAjNota">Nota del ajuste<input id="lAjNota" type="text" autocomplete="off"></label>
       </form>
@@ -599,7 +599,7 @@ function liqDefaults(m,MM){
 }
 const touched=new Set();let lastMes="",mesManual=false;let imported={};const EDS={};let edShown="";
 function liqCalc(){const g=id=>parseFloat($(id).value)||0;
-  const prod=g("lProd"),gas=g("lGas"),ut=prod-gas,djw=Math.round(ut*.6),osc=ut-djw,fact=g("lFact"),reint=g("lReint"),cruce=g("lCruce"),aj=g("lAj");
+  const prod=g("lProd"),gas=g("lGas"),ut=prod-gas,djw=Math.round(ut*.6),osc=ut-djw,fact=g("lFact"),reint=g("lReint"),cruce=0,aj=g("lAj");   // el bulldozer se lleva aparte hasta que produzca
   const saldo=fact-djw-reint-cruce+aj;return {m:$("lMes").value,prod,gas,ut,djw,osc,fact,reint,cruce,aj,saldo};}
 function liqRender(){const L=liqCalc();const row=(a,b,cls)=>`<div class="row ${cls||""}"><span>${a}</span><span>${b}</span></div>`;
   $("liqOut").innerHTML=row("Utilidad (ingresos − gastos)",fmt(L.ut))+row("Oscar 40%",fmt(L.osc))+row("DJW 60%",fmt(L.djw))+row("Factura JW SAS",fmt(L.fact))+row("− Su 60%","− "+fmt(L.djw))+(L.reint?row("− Gastos de la volqueta que pagó usted","− "+fmt(L.reint)):"")+(L.cruce?row("− Parte de Oscar en el bulldozer","− "+fmt(L.cruce)):"")+(L.aj?row("Ajuste"+($("lAjNota").value?" · "+esc($("lAjNota").value):""),(L.aj>0?"− ":"+ ")+fmt(Math.abs(L.aj))):"")+row(L.saldo>=0?"Usted le consigna a Don Oscar":"Don Oscar le gira a usted",fmt(Math.abs(L.saldo)),"total");
