@@ -145,6 +145,37 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
 #lock input[type=password]{font:500 18px var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;width:100%}
 #lock .chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+/* detalle del mes */
+.ed{display:grid;gap:14px;border-top:1px solid var(--line);padding-top:14px}
+.edsec{display:grid;gap:4px}
+.edsec h4{margin:0;font:600 15px var(--display);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.edrow{display:grid;grid-template-columns:1fr 8.5em auto;gap:6px;padding:8px 0;border-bottom:1px solid var(--line);align-items:center}
+.edrow .c{grid-column:1/-1}
+.edrow input,.edrow select{font:500 15px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 8px;width:100%;min-width:0;font-variant-numeric:tabular-nums}
+.edrow input[type=number]{text-align:right}
+.edrow .x{border:1px solid var(--line);background:none;color:var(--muted);border-radius:6px;font-size:18px;line-height:1;width:36px;height:36px;cursor:pointer}
+@media (min-width:640px){.edrow{grid-template-columns:2fr 1.3fr 9em auto}.edrow .c{grid-column:auto}}
+.edfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:6px;font-size:15px}
+.edfoot b{font-variant-numeric:tabular-nums}
+.warnbox{display:grid;gap:8px;padding:12px 14px;border-radius:8px;background:var(--warn-bg);color:var(--fg);font-size:14px}
+.warnbox ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.warnbox li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+/* reporte para Don Oscar */
+#rep{position:fixed;inset:0;z-index:60;background:var(--bg);display:grid;grid-template-rows:auto 1fr;overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
+#repBody{overflow:auto;padding:4px 12px 32px}
+.paper{background:#fff;color:#16191c;max-width:720px;margin:0 auto;border-radius:6px;padding:24px 18px;display:grid;gap:22px;font-size:14px}
+.paper .kick{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5b636b;font-weight:600}
+.paper h2{font-size:28px;color:#16191c;margin:4px 0}
+.paper h3{font-size:17px;color:#16191c;margin-bottom:4px}
+.paper .sub{color:#5b636b;font-size:13px}
+.paper table{font-size:14px}
+.paper td{color:#16191c;border-bottom:1px solid #dde1e5;white-space:normal}
+.paper td:last-child{white-space:nowrap;width:1%}
+.paper td.b{font-weight:600}
+.paper tfoot td{border-top:2px solid #16191c;font-size:15px}
+.paper tfoot.saldo td{font-size:17px;background:#eef4fb}
+.paper .note{font-size:12.5px;color:#5b636b}
+@media print{body{background:#fff;padding:0}body>*:not(#rep){display:none!important}#rep{position:static;display:block;background:#fff}#rep .vbar{display:none}.paper{max-width:none;padding:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -162,6 +193,7 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
     <span class="toast" id="lockMsg" role="status"></span>
   </form>
 </div>
+<div id="rep" hidden><div class="vbar"><span id="repName"></span><button id="repShare" class="btn" type="button">Compartir PDF</button><button id="repDl" class="btn ghost" type="button">Descargar PDF</button><button id="repClose" class="btn ghost" type="button">Cerrar</button><span class="toast" id="repMsg" role="status" style="flex-basis:100%"></span></div><div id="repBody"></div></div>
 <div id="viewer" hidden><div class="vbar"><span id="viewerName"></span><a id="viewerOpen" class="btn ghost" target="_blank" rel="noopener">Abrir o descargar</a><button id="viewerClose" class="btn" type="button">Cerrar</button></div><div id="viewerBody"></div></div>
 <div class="wrap">
   <header>
@@ -221,22 +253,23 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
       <div id="pendBox"></div>
     </div>
     <div class="card">
-      <div class="card-head"><h3>Liquidar un mes</h3><span class="small muted">Ponga los totales de los dos resúmenes de Don Oscar y la factura; lo demás se llena solo</span></div>
+      <div class="card-head"><h3>Liquidar un mes</h3><span class="small muted">Suba los PDF de Don Oscar, revise el detalle y escoja el mes al que corresponden</span></div>
       <div class="upload"><label class="btn" for="fPdf" style="cursor:pointer">Subir PDFs de Don Oscar<input id="fPdf" type="file" accept="application/pdf,.pdf" multiple hidden></label><span class="small muted">La factura, el resumen de ingresos y el de gastos. Puede subirlos juntos o uno por uno.</span><span class="toast" id="impMsg" role="status"></span></div>
+      <div class="form"><label for="lMes">Mes al que corresponden los reportes<input id="lMes" type="month"></label></div>
       <div id="impOut"></div>
+      <div class="ed" id="edBox"></div>
       <form id="fLiq" class="form" novalidate>
-        <label for="lMes">Mes<input id="lMes" type="month"></label>
         <label for="lProd">Total del resumen de ingresos<input id="lProd" type="number" inputmode="numeric" min="0"></label>
         <label for="lGas">Total del resumen de gastos<input id="lGas" type="number" inputmode="numeric" min="0"></label>
-        <label for="lFact">Factura de transporte de fruto (JW SAS)<input id="lFact" type="number" inputmode="numeric" min="0"></label>
+        <label for="lFact">Factura de transporte de fruto (JW SAS)<input id="lFact" type="number" inputmode="numeric" min="0"><span class="small" id="lFactHint" style="color:var(--warn)"></span></label>
         <label for="lFactNo">No. de factura<input id="lFactNo" type="text" inputmode="numeric" autocomplete="off"></label>
         <label for="lReint">Gastos de la volqueta que pagó usted<input id="lReint" type="number" inputmode="numeric" min="0"></label>
-        <label for="lCruce">Descontar a Oscar por el bulldozer<input id="lCruce" type="number" inputmode="numeric"></label>
+        <label for="lCruce">Descontar a Oscar por el bulldozer (opcional)<input id="lCruce" type="number" inputmode="numeric" placeholder="0: el bulldozer va aparte"></label>
         <label for="lAj">Otros ajustes (+ a su favor, − a favor de Oscar)<input id="lAj" type="number" inputmode="numeric"></label>
         <label for="lAjNota">Nota del ajuste<input id="lAjNota" type="text" autocomplete="off"></label>
       </form>
       <div class="liq-out" id="liqOut"></div>
-      <div class="actions"><button class="btn" id="lCopy" type="button">Copiar mensaje para Don Oscar</button><button class="btn ghost" id="lClose" type="button">Cerrar liquidación</button><span class="toast" id="lToast" role="status"></span></div>
+      <div class="actions"><button class="btn" id="lRep" type="button">Reporte PDF para Don Oscar</button><button class="btn ghost" id="lCopy" type="button">Copiar mensaje de WhatsApp</button><button class="btn ghost" id="lClose" type="button">Cerrar liquidación</button><span class="toast" id="lToast" role="status"></span></div>
       <pre class="msg" id="lMsg"></pre>
     </div>
     <div class="card">
@@ -559,11 +592,11 @@ function nextMonth(m){let [y,mm]=m.split("-").map(Number);mm++;if(mm>12){mm=1;y+
 function liqDefaults(m,MM){
   const x=MM.find(y=>y.m===m);const C=cuentaModel();
   return {lProd:x?Math.round(sum(x.ing)):"",lGas:x?Math.round(sum(x.gas)):"",
-    lFact:Math.round(sum(S.reg.filter(r=>r.mes===m&&r.tipo==="viaje"&&r.cliente==="JW").map(r=>r.valor)))||"",
+    lFact:Math.round(sum(S.reg.filter(r=>r.mes===m&&r.tipo==="viaje"&&r.cliente==="JW").map(r=>r.valor)))||Math.round(+((S.meses[m]||{}).ingresos||{}).bal||0)||"",
     lReint:Math.round(sum(S.reg.filter(r=>r.mes===m&&r.tipo==="gasto"&&r.maquina==="volqueta"&&r.pago==="DJW").map(r=>r.valor)))||0,
-    lCruce:Math.max(0,Math.round(C.saldo)),lAj:0};
+    lCruce:0,lAj:0};   // el bulldozer no se cruza en la liquidación hasta que trabaje; sigue en su propia cuenta
 }
-const touched=new Set();let lastMes="",mesManual=false;
+const touched=new Set();let lastMes="",mesManual=false;let imported={};const EDS={};let edShown="";
 function liqCalc(){const g=id=>parseFloat($(id).value)||0;
   const prod=g("lProd"),gas=g("lGas"),ut=prod-gas,djw=Math.round(ut*.6),osc=ut-djw,fact=g("lFact"),reint=g("lReint"),cruce=g("lCruce"),aj=g("lAj");
   const saldo=fact-djw-reint-cruce+aj;return {m:$("lMes").value,prod,gas,ut,djw,osc,fact,reint,cruce,aj,saldo};}
@@ -572,6 +605,7 @@ function liqRender(){const L=liqCalc();const row=(a,b,cls)=>`<div class="row ${c
   const M=L.m?mk(L.m,true):"";const n=v=>Math.round(v).toLocaleString("es-CO");
   $("lMsg").textContent=`Don Oscar, le envío las cuentas de ${M}:\nIngresos ${n(L.prod)} − gastos ${n(L.gas)} = utilidad ${n(L.ut)}\nOscar 40%: ${n(L.osc)}\nDJW 60%: ${n(L.djw)}\n\nFactura ${$("lFactNo").value?"No. "+$("lFactNo").value+" ":""}${n(L.fact)} − DJW ${n(L.djw)}`+(L.reint?` − gastos que pagué ${n(L.reint)}`:"")+(L.cruce?` − su 40% del bulldozer ${n(L.cruce)}`:"")+(L.aj?` ${L.aj>0?"−":"+"} ${$("lAjNota").value||"ajuste"} ${n(Math.abs(L.aj))}`:"")+`\n= ${L.saldo>=0?"valor a consignarle":"saldo a mi favor"}: ${n(Math.abs(L.saldo))}\n\n¿Me confirma si está correcto?`;
   const closed=S.liq[L.m];$("lClose").textContent=closed?"Reemplazar liquidación cerrada":"Cerrar liquidación";
+  $("lFactHint").textContent=factEstimada(L)?"Estimada con la línea de Balsora del producido. Cámbiela cuando llegue la factura.":"";
 }
 function renderCuenta(MM){
   const C=cuentaModel();
@@ -587,19 +621,24 @@ function renderCuenta(MM){
   table("tbMov",["Fecha","~Movimiento","Efecto","Saldo"],[...C.movs].reverse().map(m=>[fdate(m.fecha),{t:esc(m.c),c:"wrap"},{t:(m.v>=0?"+ ":"− ")+fmt(Math.abs(m.v)),c:m.v>=0?"num-good":"num-crit"},fmt(m.acc)]),null,"Sin movimientos todavía.");
   // liquidation form defaults
   if(!mesManual){const ks=Object.keys(S.liq).sort();$("lMes").value=ks.length?nextMonth(ks[ks.length-1]):new Date(Date.now()-5*3600e3).toISOString().slice(0,7)}
-  const m=$("lMes").value;if(m!==lastMes){touched.clear();lastMes=m;const cl=S.liq[m];if(cl){$("lFactNo").value=cl.facturaNo||""}}
+  const m=$("lMes").value;if(m!==lastMes){touched.clear();lastMes=m;const cl=S.liq[m];$("lFactNo").value=cl?cl.facturaNo||"":""}
   const d=S.liq[m]?{lProd:S.liq[m].producido??"",lGas:S.liq[m].gastos??"",lFact:S.liq[m].fact,lReint:S.liq[m].reintegro||0,lCruce:-(S.liq[m].dozer||0),lAj:S.liq[m].ajuste||0}:liqDefaults(m,MM);
   Object.entries(d).forEach(([id,v])=>{if(!touched.has(id))$(id).value=v});
+  edAfterRender(m);
   liqRender();
 }
 ["lProd","lGas","lFact","lReint","lCruce","lAj","lAjNota","lFactNo"].forEach(id=>$(id).addEventListener("input",()=>{touched.add(id);liqRender()}));
-$("lMes").addEventListener("change",()=>{mesManual=true;render()});
+$("lMes").addEventListener("change",()=>{const old=lastMes,nw=$("lMes").value;
+  // lo leído de unos PDF sin mes se pasa al mes que escoja
+  if(nw&&EDS[old]&&EDS[old].dirty&&EDS[old].fromPdf&&!(EDS[nw]&&EDS[nw].dirty)){EDS[nw]={...EDS[old],m:nw,mesAuto:false,saved:!!S.meses[nw]};delete EDS[old]}
+  mesManual=true;render()});
 $("lCopy").addEventListener("click",async()=>{const t=$("lMsg").textContent;try{await navigator.clipboard.writeText(t);$("lToast").textContent="Mensaje copiado. Péguelo en WhatsApp.";$("lToast").className="toast num-good"}catch(e){const r=document.createRange();r.selectNodeContents($("lMsg"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("lToast").textContent="Seleccioné el mensaje: cópielo con el menú del teléfono.";$("lToast").className="toast"}setTimeout(()=>$("lToast").textContent="",5000)});
 $("lClose").addEventListener("click",async()=>{const b=$("lClose");const L=liqCalc();const toast=$("lToast");
   if(!db){toast.textContent="No se puede guardar desde esta vista.";toast.className="toast num-crit";return}
   if(!L.m||!(L.prod>0)){toast.textContent="Falta el mes o el total de ingresos.";toast.className="toast num-crit";return}
   if(!b.dataset.armed){b.dataset.armed=1;b.textContent="¿Confirma? Toque otra vez";b.className="btn danger";setTimeout(()=>{delete b.dataset.armed;b.className="btn ghost";liqRender()},5000);return}
   delete b.dataset.armed;b.className="btn ghost";b.disabled=true;
+  if(EDS[L.m]&&EDS[L.m].dirty)await edSave();
   try{const no=$("lFactNo").value.trim();const adjL=await storeFiles(Object.values(imported).map(x=>x.file).filter(Boolean));
     await db.doc("liquidaciones/"+L.m).set({mes:L.m,adjuntos:adjL,fechaCruce:new Date(Date.now()-5*3600e3).toISOString().slice(0,10),producido:L.prod,gastos:L.gas,fact:L.fact,facturaNo:no,djw:L.djw,dozer:-L.cruce,otros:0,ajuste:L.aj,reintegro:L.reint,saldo:L.saldo,comp:L.saldo>=0?"Pendiente: usted consigna":"Pendiente: Oscar gira",det:[L.reint?"Reintegro de gastos pagados por DJW "+fmt(L.reint):"",L.cruce?"40% de Oscar en el bulldozer "+fmt(L.cruce):"",L.aj?($("lAjNota").value||"Ajuste")+" "+fmt(L.aj):""].filter(Boolean).join("; ")});
     if(no)await db.doc("facturas/"+no.replace(/[^A-Za-z0-9_-]/g,"")).set({no,fecha:L.m+"-28",concepto:"Transporte de fruto, "+mk(L.m,true),cantidad:"",valor:L.fact});
@@ -699,10 +738,11 @@ function parseMoney(tok){
     const app=+(groups.slice(0,-1).join("")+last+"0");if(app>5e8)return +groups.slice(0,-1).join("");  // 790,000,00 (OCR) -> 790000
     return app;                                                                             // 720.00 -> 720000
   }
+  if(groups.length===2&&groups[0].length===3&&last.length===1)return +(groups[0]+last+"00");  // 750,5 -> 750.500
   if(groups.slice(1).every(g=>g.length===3))return +groups.join("");
   return +groups.slice(0,-1).join("");                                                       // 250,39 -> 250 (no money)
 }
-const MONEY_RE=/\$?\s?\d{1,3}(?:[.,]\d{2,3})+|\$?\s?\d{4,}/g;
+const MONEY_RE=/\$?\s?\d{1,3}(?:[.,]\d{2,3})+|\$?\s?\d{3}[.,]\d(?![\d.,])|\$?\s?\d{4,}/g;
 function moneyIn(line){return (line.match(MONEY_RE)||[]).map(parseMoney).filter(v=>v!==null&&v>=1000)}
 async function pdfLines(file){
   const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;const lines=[];let textLen=0;
@@ -718,13 +758,17 @@ async function pdfLines(file){
   const w=await Tesseract.createWorker(window.__OCR_LANG||"spa",1,OCR_LANG_PATH?{langPath:OCR_LANG_PATH,gzip:false}:{});
   for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n);const vp=pg.getViewport({scale:2.1});const cv=document.createElement("canvas");cv.width=vp.width;cv.height=vp.height;
     const cx=cv.getContext("2d");await pg.render({canvasContext:cx,viewport:vp}).promise;
-    const im=cx.getImageData(0,0,cv.width,cv.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=0.3*d[i]+0.59*d[i+1]+0.11*d[i+2];const v=g>158?255:0;d[i]=d[i+1]=d[i+2]=v}cx.putImageData(im,0,0);
+    const im=cx.getImageData(0,0,cv.width,cv.height);bw(im.data,158);cx.putImageData(im,0,0);
     for(let k=0;k<PSM.length;k++){await w.setParameters({tessedit_pageseg_mode:PSM[k]});const r=await w.recognize(cv);
       passes[k].push(...r.data.text.split("\n").map(s=>fixNums(s.trim())).filter(Boolean));}}
   await w.terminate();
   return {passes,ocr:true};
 }
-function fixNums(l){return l.replace(/(\d)\s+([.,]\d)/g,"$1$2").replace(/([.,])\s+(\d)/g,"$1$2").replace(/(\d[.,]\d{1,2})\s(\d{1,2}[.,]\d{3})/g,(m,a,b)=>(a+b).replace(/\s/g,""))}
+/* "120mil", "246mMil", "1,5 mil" -> número completo */
+function normMil(l){return l.replace(/(\d{1,3}(?:[.,]\d{1,2})?)\s*m{1,2}\s*[il1]l\b/gi,(m,n)=>String(Math.round(parseFloat(n.replace(",","."))*1000)))}
+/* blanco y negro para el lector: los fondos de color (la fila naranja del total) quedan blancos */
+function bw(d,th){for(let i=0;i<d.length;i+=4){const r=d[i],gg=d[i+1],b=d[i+2];const g=0.3*r+0.59*gg+0.11*b;const sat=Math.max(r,gg,b)-Math.min(r,gg,b);const v=(sat>60&&g>90)||g>th?255:0;d[i]=d[i+1]=d[i+2]=v}}
+function fixNums(l){l=normMil(l);return l.replace(/(\d)\s+([.,]\d)/g,"$1$2").replace(/([.,])\s+(\d)/g,"$1$2").replace(/(\d[.,]\d{1,2})\s(\d{1,2}[.,]\d{3})/g,(m,a,b)=>(a+b).replace(/\s/g,""))}
 function guessMonth(text,fallbackDate){
   const up=text.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const yr=(up.match(/20\d{2}/)||[])[0]||String(new Date().getFullYear());
@@ -754,36 +798,163 @@ function analyze(lines,name){
   // líneas sin valor seguidas de valor sueltos (PDF de dos renglones)
   return {tipo,total,det,mes:guessMonth(text),name};
 }
-let imported={};
 function importRender(){
-  const box=$("impOut");const parts=[];const fmtL=(r,lbl)=>{if(!r)return `<li><span class="pill warn">Falta</span> ${lbl}</li>`;
-    const s=r.det?sum(r.det.map(d=>d.v)):null;const diff=s!==null&&r.total&&Math.abs(s-r.total)>1;
-    return `<li><span class="pill good">Leído</span> <b>${lbl}</b>: ${fmt(r.total)}${r.mes?` · ${mk(r.mes,true)}`:""}${r.ocr?` <span class="small muted">(escaneado; revise las cifras)</span>`:""}${r.no?` · factura No. ${esc(r.no)}`:""}${r.cant?` · ${esc(r.cant)} t`:""}
-      ${diff&&!r.ocr?`<br><span class="small num-crit">Revise: las líneas que leí suman ${fmt(s)} y el total del PDF dice ${fmt(r.total)}. Puede ser un error en el PDF o una línea que leí mal.</span>`:""}${!diff&&r.det&&r.det.length?`<br><span class="small num-good">Las líneas cuadran con el total.</span>`:""}
-      ${r.det&&r.det.length?`<details><summary class="small muted">Ver ${r.det.length} líneas</summary><ul class="small">${r.det.map(d=>`<li>${esc(d.c)}: ${fmt(d.v)}</li>`).join("")}</ul></details>`:""}</li>`};
-  box.innerHTML=`<ul class="imp-list">${fmtL(imported.ingresos,"Ingresos (producido)")}${fmtL(imported.gastos,"Gastos")}${fmtL(imported.factura,"Factura de transporte de fruto")}</ul>`;
+  const box=$("impOut");const fmtL=(r,lbl)=>!r?`<li><span class="pill warn">Falta</span> ${lbl}</li>`:
+    `<li><span class="pill good">Leído</span> <b>${lbl}</b>: ${fmt(r.total)}${r.ocr?` <span class="small muted">(escaneado; revise las cifras abajo)</span>`:""}${r.no?` · factura No. ${esc(r.no)}`:""}${r.cant?` · ${esc(r.cant)} t`:""}</li>`;
+  box.innerHTML=Object.keys(imported).length?`<ul class="imp-list">${fmtL(imported.ingresos,"Producido")}${fmtL(imported.gastos,"Gastos")}${fmtL(imported.factura,"Factura de transporte de fruto")}</ul>`:"";
 }
 async function importFiles(files){
-  const msg=$("impMsg");msg.className="toast";
+  const msg=$("impMsg");msg.className="toast";const got={};
   for(const f of files){msg.textContent=`Leyendo ${f.name}…`;
     try{const {passes,ocr}=await pdfLines(f);
       const cands=passes.filter(p=>p.length).map(p=>{const r=analyze(p,f.name);r.lines=p;const s=r.det?sum(r.det.map(d=>d.v)):0;r.score=(r.det&&r.total&&Math.abs(s-r.total)<=1?1000:0)+(r.total?10:0)+(r.det?r.det.length:0);return r});
       cands.sort((a,b)=>b.score-a.score);const r=cands[0];r.ocr=ocr;
       if(!r.tipo){msg.textContent=`No reconocí ${f.name}: no dice factura, gastos ni ingresos.`;msg.className="toast num-crit";continue}
-      r.file=f;imported[r.tipo]=r;}
+      r.file=f;imported[r.tipo]=r;got[r.tipo]=r}
     catch(e){msg.textContent=e.message==="ocr"?"Ese PDF es una foto y no cargó el lector de imágenes; revise la conexión.":`No pude leer ${f.name}.`;msg.className="toast num-crit";return}}
   importRender();
-  const set=(id,v)=>{if(v||v===0){$(id).value=v;touched.add(id)}};
-  const mes=(imported.ingresos||{}).mes||(imported.gastos||{}).mes||(imported.factura||{}).mes;
-  if(mes&&$("lMes").value!==mes){$("lMes").value=mes;mesManual=true;lastMes=mes;touched.clear();render()}
-  if(imported.ingresos)set("lProd",imported.ingresos.total);
-  if(imported.gastos)set("lGas",imported.gastos.total);
-  if(imported.factura){set("lFact",imported.factura.total);set("lFactNo",imported.factura.no)}
+  // el mes: el que diga el PDF; si no dice, el mes anterior (Don Oscar manda los reportes a mes vencido)
+  const found=(got.ingresos||{}).mes||(got.gastos||{}).mes||(got.factura||{}).mes;
+  const mes=found||(EDS[$("lMes").value]&&EDS[$("lMes").value].fromPdf?$("lMes").value:prevMonth());
+  if($("lMes").value!==mes){$("lMes").value=mes;mesManual=true;lastMes=mes;touched.clear()}
+  if(got.ingresos||got.gastos){const E=EDS[mes]&&EDS[mes].dirty?EDS[mes]:(EDS[mes]=fromStore(mes));
+    if(got.ingresos){E.ing=got.ingresos.det.map(d=>({c:d.c,cat:catIng(d.c),v:d.v}));E.pdfIng=got.ingresos.total||null}
+    if(got.gastos){E.gas=got.gastos.det.map(d=>({c:d.c,cat:catGas(d.c),v:d.v}));E.pdfGas=got.gastos.total||null}
+    E.dirty=true;E.fromPdf=true;E.mesAuto=!found}
+  edShown="";render();
+  if(got.factura){$("lFact").value=got.factura.total;touched.add("lFact");$("lFactNo").value=got.factura.no||"";touched.add("lFactNo")}
   liqRender();
-  const n=Object.keys(imported).length;msg.textContent=n===3?"Listo: revise las cifras, copie el mensaje y cierre la liquidación.":`Leí ${n} de 3 archivos. Suba los que faltan.`;msg.className="toast "+(n===3?"num-good":"");
+  const n=Object.keys(imported).length;
+  msg.textContent=n===3?"Listo: revise el detalle, guárdelo y saque el reporte.":`Leí ${n} de 3 archivos.${!imported.factura?" Falta la factura: mientras llega, la estimo con la línea de Balsora.":" Suba los que faltan."}`;msg.className="toast "+(n===3?"num-good":"");
 }
+
+/* ---------- detalle del mes (editable) ---------- */
+function prevMonth(){const d=new Date(Date.now()-5*3600e3);d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()-1);return d.toISOString().slice(0,7)}
+function fold(c){return String(c||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
+function catIng(c){c=fold(c);return /balsora|gran sinu|tolu/.test(c)?"bal":/maria/.test(c)?"mar":/alquiler/.test(c)?"alq":/zona/.test(c)?"zona":"var"}
+function catGas(c){c=fold(c);return /acpm|combustible|diesel|gasolina/.test(c)?"acpm":/llanta/.test(c)?"llantas":/peaje|bascula/.test(c)?"peajes":/cargador|cargue|ayudante|cotero/.test(c)?"ayudante":/conductor|viajes?\b|sueldo|salario/.test(c)?"conductor":"mant"}
+function volqReg(m){return S.reg.filter(r=>r.maquina==="volqueta"&&(r.tipo==="viaje"||r.tipo==="gasto")&&(!m||r.mes===m))}
+function fromStore(m){const rep=S.meses[m];
+  if(rep){const ing=(rep.detalleIng||[]).length?rep.detalleIng.map(d=>({c:d.c,cat:d.cat||catIng(d.c),v:+d.v})):ING.filter(s=>+(rep.ingresos||{})[s.id]).map(s=>({c:s.k,cat:s.id,v:+rep.ingresos[s.id]}));
+    const gas=(rep.detalle||[]).length?rep.detalle.map(d=>({c:d.c,cat:d.cat||catGas(d.c),v:+d.v})):GAS.filter(s=>+(rep.gastos||{})[s.id]).map(s=>({c:s.k,cat:s.id,v:+rep.gastos[s.id]}));
+    return {m,ing,gas,pdfIng:rep.pdfIng||null,pdfGas:rep.pdfGas||null,saved:true,src:"reporte",dirty:false}}
+  const rs=volqReg(m);
+  return {m,ing:rs.filter(r=>r.tipo==="viaje").map(r=>({c:((ING.find(s=>s.id===r.trabajo)||{}).k||"Viaje")+(r.nota?" · "+r.nota:""),cat:r.trabajo,v:+r.valor})),
+    gas:rs.filter(r=>r.tipo==="gasto").map(r=>({c:catName(r)+(r.nota?" · "+r.nota:""),cat:r.categoria,v:+r.valor})),pdfIng:null,pdfGas:null,saved:false,src:rs.length?"registros":"",dirty:false}}
+function edCur(){const m=$("lMes").value;if(!m)return null;if(!EDS[m])EDS[m]=fromStore(m);return EDS[m]}
+function edAfterRender(m){
+  const E0=EDS[m];if(E0&&!E0.dirty)delete EDS[m];   // sin cambios: se vuelve a leer de lo guardado
+  const E=edCur();if(!E)return;
+  if(E.dirty){const ti=Math.round(sum(E.ing.map(d=>d.v))),tg=Math.round(sum(E.gas.map(d=>d.v)));
+    $("lProd").value=ti;$("lGas").value=tg;touched.add("lProd");touched.add("lGas");
+    if(!touched.has("lFact")&&!S.liq[m])$("lFact").value=Math.round(sum(E.ing.filter(d=>d.cat==="bal").map(d=>d.v)))||""}
+  if(!E.dirty||edShown.split("|")[0]!==m||!edShown)renderED();else{edTotals();edWarnRender()}
+}
+function renderED(){const E=edCur();const box=$("edBox");if(!E){box.innerHTML="";return}edShown=E.m+"|";
+  const opts=(L,sel)=>L.map(s=>`<option value="${s.id}"${s.id===sel?" selected":""}>${esc(s.k)}</option>`).join("");
+  const rows=(k,L)=>E[k].map((d,i)=>`<div class="edrow"><input class="c" data-k="${k}" data-i="${i}" data-f="c" value="${esc(d.c)}" placeholder="Concepto" aria-label="Concepto"><select data-k="${k}" data-i="${i}" data-f="cat" aria-label="Categoría">${opts(L,d.cat)}</select><input data-k="${k}" data-i="${i}" data-f="v" type="number" inputmode="numeric" value="${Math.round(d.v)||""}" placeholder="Valor" aria-label="Valor"><button type="button" class="x" data-rmk="${k}" data-i="${i}" aria-label="Quitar línea">×</button></div>`).join("")||`<p class="small muted">Sin líneas.</p>`;
+  const LBL=mk(E.m,true);
+  const st=E.dirty?["warn","Sin guardar"]:E.saved?["good","Guardado"]:E.src==="registros"?["info","Sale de los registros"]:["info","Sin detalle"];
+  box.innerHTML=`<div class="card-head"><h3>Detalle de ${LBL}</h3><span class="pill ${st[0]}" id="edState">${st[1]}</span></div>
+   ${E.mesAuto?`<p class="small" style="color:var(--warn)">Los PDF no dicen el mes. Los dejé en ${LBL} (el mes anterior). Si son de otro mes, cámbielo arriba.</p>`:""}
+   ${!E.ing.length&&!E.gas.length?`<p class="small muted">Suba los PDF de Don Oscar o agregue las líneas a mano.</p>`:""}
+   <div class="edsec"><h4>Producido</h4>${rows("ing",ING)}<div class="edfoot"><button type="button" class="btn ghost" data-add="ing">+ Agregar línea</button><span>Total <b id="edTI"></b></span></div><p class="small" id="edCI"></p></div>
+   <div class="edsec"><h4>Gastos</h4>${rows("gas",GAS)}<div class="edfoot"><button type="button" class="btn ghost" data-add="gas">+ Agregar línea</button><span>Total <b id="edTG"></b></span></div><p class="small" id="edCG"></p></div>
+   <div class="actions"><button class="btn" id="edSave" type="button">Guardar detalle de ${LBL}</button>${E.dirty&&E.saved?`<button class="btn ghost" id="edUndo" type="button">Descartar cambios</button>`:""}<span class="toast" id="edToast" role="status"></span></div>
+   <div id="edWarn"></div>`;
+  const mark=()=>{E.dirty=true;$("edState").className="pill warn";$("edState").textContent="Sin guardar";edAfterRender(E.m);liqRender()};
+  box.querySelectorAll("[data-f]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const d=E[el.dataset.k][+el.dataset.i];d[el.dataset.f]=el.dataset.f==="v"?(parseFloat(el.value)||0):el.value;mark()}));
+  box.querySelectorAll("[data-rmk]").forEach(b=>b.addEventListener("click",()=>{E[b.dataset.rmk].splice(+b.dataset.i,1);E.dirty=true;edShown="";render()}));
+  box.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.add;E[k].push({c:"",cat:k==="ing"?"var":"mant",v:0});E.dirty=true;edShown="";render();const ins=box.querySelectorAll(`input.c[data-k="${k}"]`);if(ins.length)ins[ins.length-1].focus()}));
+  $("edSave").addEventListener("click",edSave);
+  if($("edUndo"))$("edUndo").addEventListener("click",()=>{delete EDS[E.m];touched.delete("lProd");touched.delete("lGas");edShown="";render()});
+  edTotals();edWarnRender();
+}
+function edTotals(){const E=edCur();if(!E||!$("edTI"))return;const ti=sum(E.ing.map(d=>d.v)),tg=sum(E.gas.map(d=>d.v));
+  $("edTI").textContent=fmt(ti);$("edTG").textContent=fmt(tg);
+  const chk=(el,pdf,s)=>{$(el).innerHTML=pdf&&s?(Math.abs(pdf-s)>1?`<span class="num-crit">El total del PDF dice ${fmt(pdf)} y las líneas suman ${fmt(s)} (diferencia ${fmt(Math.abs(s-pdf))}). Corrija la línea que no cuadra o confírmelo con Don Oscar.</span>`:`<span class="num-good">Cuadra con el total del PDF.</span>`):""};
+  chk("edCI",E.pdfIng,ti);chk("edCG",E.pdfGas,tg)}
+function edWarnRender(){const E=edCur();const el=$("edWarn");if(!E||!el)return;
+  const vals=new Set([...E.ing,...E.gas].map(d=>Math.round(d.v)).concat([E.pdfIng,E.pdfGas].map(v=>Math.round(v||0))).filter(v=>v>0));
+  const sus=volqReg().filter(r=>r.mes!==E.m&&r.origen!=="historial"&&vals.has(Math.round(+r.valor)));
+  const same=(E.saved||E.dirty)?volqReg(E.m).filter(r=>r.origen!=="historial"):[];
+  let h="";
+  if(sus.length)h+=`<div class="warnbox"><b>Estos registros tienen los mismos valores de estos reportes pero quedaron en otro mes.</b><span class="small">Si los guardó desde Registrar con estos PDF, bórrelos para no contarlos dos veces.</span><ul>${sus.map(r=>`<li><span>${fdate(r.fecha)} · ${r.tipo==="viaje"?"Viaje":"Gasto"} · ${fmt(r.valor)}${r.nota?" · "+esc(r.nota):""}</span><button class="btn ghost" data-del="${esc(r._id)}" type="button">Borrar</button></li>`).join("")}</ul></div>`;
+  if(same.length&&E.src!=="registros")h+=`<p class="small muted">${mk(E.m,true)} también tiene ${same.length} registro${same.length>1?"s":""} sueltos de la volqueta. Con el detalle guardado, el mes se calcula con este detalle y esos registros no se suman.</p>`;
+  el.innerHTML=h;el.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>askDelete(b)))}
+async function edSave(){const E=edCur();const t=$("edToast");
+  if(!db){t.textContent="No se puede guardar desde esta vista.";t.className="toast num-crit";return}
+  const ing=E.ing.filter(d=>d.v>0),gas=E.gas.filter(d=>d.v>0);
+  if(!ing.length&&!gas.length){t.textContent="No hay líneas con valor.";t.className="toast num-crit";return}
+  const byCat=(L,lines)=>Object.fromEntries(L.map(s=>[s.id,Math.round(sum(lines.filter(d=>d.cat===s.id).map(d=>d.v)))]));
+  const old=S.meses[E.m]||{};const to=old.toneladas||{};const est=!old.mes||old.toneladasEstimadas||!(+to.bal||+to.mar);
+  const tEst=(cat)=>Math.round(sum(ing.filter(d=>d.cat===cat).map(d=>d.v))/TARIFA[cat]*100)/100;
+  const ton=est?{bal:tEst("bal"),mar:tEst("mar"),zona:0}:to;
+  const m=E.m;
+  try{await db.doc("meses/"+m).set({...old,mes:m,fuente:"Reporte Don Oscar",ingresos:byCat(ING,ing),gastos:byCat(GAS,gas),toneladas:ton,toneladasEstimadas:est,
+      detalleIng:ing.map(d=>({c:d.c.trim()||"(sin concepto)",v:Math.round(d.v),cat:d.cat})),detalle:gas.map(d=>({c:d.c.trim()||"(sin concepto)",v:Math.round(d.v),cat:d.cat})),pdfIng:E.pdfIng||null,pdfGas:E.pdfGas||null,guardado:today()});
+    delete EDS[m];touched.delete("lProd");touched.delete("lGas");edShown="";render();
+    $("edToast").textContent=`Guardado en ${mk(m,true)}.`;$("edToast").className="toast num-good"}
+  catch(e){t.textContent="No se guardó. Intente de nuevo.";t.className="toast num-crit"}}
+function factEstimada(L){if(!L.m||!L.fact)return false;
+  if(S.liq[L.m]||imported.factura)return false;const E=edCur();const bal=Math.round(sum((E?E.ing:[]).filter(d=>d.cat==="bal").map(d=>d.v)));return bal>0&&Math.round(L.fact)===bal}
+
+/* ---------- reporte para Don Oscar ---------- */
+function repModel(){const L=liqCalc();const m=L.m;const E=edCur()||{ing:[],gas:[]};const [y]=m.split("-");
+  const no=$("lFactNo").value.trim();const n=v=>fmt(v);
+  const lines=(arr,tot)=>{const r=arr.filter(d=>d.v).map(d=>[d.c||"(sin concepto)",n(d.v)]);const s=sum(arr.map(d=>d.v));if(Math.abs(s-tot)>1)r.push(["Diferencia con el total registrado",n(tot-s)]);return r};
+  const cruce=[["Factura de transporte de fruto"+(no?" No. "+no:"")+" (JW SAS le debe a Don Óscar)",n(L.fact)],["Menos: 60% de la utilidad de Daniel","− "+n(L.djw)]];
+  if(L.reint)cruce.push(["Menos: gastos de la volqueta que pagó Daniel","− "+n(L.reint)]);
+  if(L.cruce)cruce.push(["Menos: 40% de Don Óscar en el bulldozer","− "+n(L.cruce)]);
+  if(L.aj)cruce.push([($("lAjNota").value.trim()||"Ajuste")+(L.aj>0?" (a favor de Daniel)":" (a favor de Don Óscar)"),(L.aj>0?"− ":"+ ")+n(Math.abs(L.aj))]);
+  const notes=[];
+  if(factEstimada(L))notes.push("La factura de transporte está estimada con la línea de Balsora del producido; se ajusta cuando llegue la factura.");
+  if(E.pdfIng&&Math.abs(E.pdfIng-L.prod)>1)notes.push(`El resumen de producido traía un total de ${n(E.pdfIng)}; la suma de sus líneas da ${n(L.prod)}.`);
+  if(E.pdfGas&&Math.abs(E.pdfGas-L.gas)>1)notes.push(`El resumen de gastos traía un total de ${n(E.pdfGas)}; la suma de sus líneas da ${n(L.gas)}.`);
+  notes.push("Cruce de cuentas: Jaramillo Williamson SAS le debe a Don Óscar la factura del transporte, y Don Óscar le debe a Daniel su 60% de la utilidad. Se compensan y queda un solo pago.");
+  return {m,file:`Liquidacion-volqueta-${m}.pdf`,kicker:"Volqueta Chevrolet Brigadier · Liquidación mensual",title:MESF[+m.slice(5)-1]+" "+y,
+    sub:`Daniel Jaramillo W. (60%) y Don Óscar (40%) · Elaborado el ${fdate(today())}`,
+    sections:[
+      {title:"1. Producido",rows:lines(E.ing,L.prod),foot:["Total producido",n(L.prod)]},
+      {title:"2. Gastos",rows:lines(E.gas,L.gas),foot:["Total gastos",n(L.gas)]},
+      {title:"3. Utilidad",rows:[["Producido",n(L.prod)],["Menos gastos","− "+n(L.gas)],["Utilidad del mes",n(L.ut),"b"],["Don Óscar 40%",n(L.osc)],["Daniel 60%",n(L.djw)]]},
+      {title:"4. Cruce de cuentas con Jaramillo Williamson SAS",rows:cruce,foot:[L.saldo>=0?"Daniel le consigna a Don Óscar":"Don Óscar le gira a Daniel",n(Math.abs(L.saldo))],saldo:true}],
+    notes}}
+function repHtml(R){return `<div class="paper"><div><div class="kick">${esc(R.kicker)}</div><h2>${esc(R.title)}</h2><div class="sub">${esc(R.sub)}</div></div>
+  ${R.sections.map(s=>`<section><h3>${esc(s.title)}</h3><table><tbody>${s.rows.map(r=>`<tr><td${r[2]==="b"?' class="b"':""}>${esc(r[0])}</td><td${r[2]==="b"?' class="b"':""}>${esc(r[1])}</td></tr>`).join("")}</tbody>${s.foot?`<tfoot${s.saldo?' class="saldo"':""}><tr><td>${esc(s.foot[0])}</td><td>${esc(s.foot[1])}</td></tr></tfoot>`:""}</table></section>`).join("")}
+  ${R.notes.map(t=>`<p class="note">${esc(t)}</p>`).join("")}</div>`}
+const JSPDF="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+async function repPdf(R){if(!window.jspdf)await loadScript(JSPDF);const {jsPDF}=window.jspdf;const d=new jsPDF({unit:"pt",format:"letter"});
+  const W=d.internal.pageSize.getWidth(),H=d.internal.pageSize.getHeight(),M=50,VW=110;let y=M;
+  const t=s=>String(s).replace(/−/g,"-").replace(/→/g,"a");
+  const need=h=>{if(y+h>H-M){d.addPage();y=M}};
+  d.setFont("helvetica","bold");d.setFontSize(8.5);d.setTextColor(95,99,107);d.text(t(R.kicker).toUpperCase(),M,y);y+=26;
+  d.setFontSize(24);d.setTextColor(22,25,28);d.text(t(R.title),M,y);y+=18;
+  d.setFont("helvetica","normal");d.setFontSize(10);d.setTextColor(95,99,107);d.text(t(R.sub),M,y);y+=30;
+  R.sections.forEach(s=>{need(70);d.setFont("helvetica","bold");d.setFontSize(12.5);d.setTextColor(22,25,28);d.text(t(s.title),M,y);y+=6;
+    d.setLineWidth(.5);d.setDrawColor(210,214,219);
+    s.rows.forEach(r=>{d.setFont("helvetica",r[2]==="b"?"bold":"normal");d.setFontSize(10.5);const ls=d.splitTextToSize(t(r[0]),W-2*M-VW-10);const h=ls.length*13+9;need(h);y+=14;
+      d.setTextColor(30,33,36);d.text(ls,M,y);d.text(t(r[1]),W-M,y,{align:"right"});y+=(ls.length-1)*13+6;d.line(M,y,W-M,y)});
+    if(s.foot){need(30);y+=3;if(s.saldo){d.setFillColor(238,244,251);d.rect(M,y,W-2*M,24,"F")}d.setLineWidth(1.3);d.setDrawColor(22,25,28);d.line(M,y,W-M,y);
+      d.setFont("helvetica","bold");d.setFontSize(s.saldo?12.5:11);d.setTextColor(22,25,28);d.text(t(s.foot[0]),M+(s.saldo?6:0),y+16);d.text(t(s.foot[1]),W-M-(s.saldo?6:0),y+16,{align:"right"});y+=24}
+    y+=26});
+  d.setFont("helvetica","normal");d.setFontSize(9);d.setTextColor(95,99,107);
+  R.notes.forEach(n=>{const ls=d.splitTextToSize(t(n),W-2*M);need(ls.length*12+6);d.text(ls,M,y);y+=ls.length*12+6});
+  return d.output("blob")}
+let repCur=null;
+function repOpen(){const L=liqCalc();const msg=$("lToast");
+  if(!L.m||!(L.prod>0)){msg.textContent="Falta el mes o el producido.";msg.className="toast num-crit";return}
+  repCur=repModel();$("repName").textContent=repCur.file;$("repBody").innerHTML=repHtml(repCur);$("repMsg").textContent="";$("rep").hidden=false}
+async function repFile(){$("repMsg").textContent="Armando el PDF…";$("repMsg").className="toast";
+  const blob=await repPdf(repCur);return new File([blob],repCur.file,{type:"application/pdf"})}
+$("lRep").addEventListener("click",repOpen);
+$("repClose").addEventListener("click",()=>{$("rep").hidden=true});
+$("repDl").addEventListener("click",async()=>{try{const f=await repFile();saveFile(f.name,f);$("repMsg").textContent="PDF descargado.";$("repMsg").className="toast num-good"}catch(e){$("repMsg").textContent="No cargó la herramienta de PDF; revise la conexión.";$("repMsg").className="toast num-crit"}});
+$("repShare").addEventListener("click",async()=>{let f;try{f=await repFile()}catch(e){$("repMsg").textContent="No cargó la herramienta de PDF; revise la conexión.";$("repMsg").className="toast num-crit";return}
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:repCur.title,text:`Liquidación de la volqueta, ${repCur.title}`});$("repMsg").textContent=""}catch(e){$("repMsg").textContent=""}}
+  else{saveFile(f.name,f);$("repMsg").textContent="Este navegador no deja compartir archivos: lo descargué para que lo mande por WhatsApp.";$("repMsg").className="toast"}});
 $("fPdf").addEventListener("change",e=>{const fs=[...e.target.files];e.target.value="";if(fs.length)importFiles(fs)});
-$("lMes").addEventListener("change",()=>{imported={};$("impOut").innerHTML=""});
 if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc=window.__PDF_WORKER||"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 /* ---------- soportes: fotos y PDF guardados en el dispositivo ---------- */
@@ -807,7 +978,7 @@ function toastMsg(t,bad){const el=$("rToast");el.textContent=t;el.className="toa
 /* leer valor, fecha y proveedor de una foto o PDF */
 async function imageLines(file){if(!window.Tesseract)throw new Error("ocr");
   const bmp=await createImageBitmap(file);const k=Math.min(2.2,1800/Math.max(bmp.width,bmp.height));const cv=document.createElement("canvas");cv.width=Math.round(bmp.width*k);cv.height=Math.round(bmp.height*k);const cx=cv.getContext("2d");cx.drawImage(bmp,0,0,cv.width,cv.height);
-  const im=cx.getImageData(0,0,cv.width,cv.height),d=im.data;for(let i=0;i<d.length;i+=4){const g=0.3*d[i]+0.59*d[i+1]+0.11*d[i+2];const v=g>150?255:0;d[i]=d[i+1]=d[i+2]=v}cx.putImageData(im,0,0);
+  const im=cx.getImageData(0,0,cv.width,cv.height);bw(im.data,150);cx.putImageData(im,0,0);
   const w=await Tesseract.createWorker(window.__OCR_LANG||"spa",1,OCR_LANG_PATH?{langPath:OCR_LANG_PATH,gzip:false}:{});const passes=[];
   for(const psm of ["4","11"]){await w.setParameters({tessedit_pageseg_mode:psm});const r=await w.recognize(cv);passes.push(r.data.text.split("\n").map(s=>fixNums(s.trim())).filter(Boolean))}
   await w.terminate();return passes}
@@ -830,6 +1001,8 @@ function renderPending(){$("rAdjList").innerHTML=pendingAdj.map((f,i)=>`<span cl
 $("rAdj").addEventListener("change",async e=>{const fs=[...e.target.files];e.target.value="";if(!fs.length)return;pendingAdj.push(...fs);renderPending();
   const f=fs[0];const st=$("rAdjMsg");st.className="small muted";st.textContent="Leyendo el soporte…";
   try{let passes,ocr=true;if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){const r=await pdfLines(f);passes=r.passes;ocr=r.ocr}else passes=await imageLines(f);
+    {const up=passes.flat().join(" ").toUpperCase();if(/\b(PRODUCIDO|GASTOS)\b/.test(up)&&passes.some(p=>p.filter(l=>moneyIn(l).length).length>=3)){
+      pendingAdj.splice(pendingAdj.indexOf(f),1);renderPending();st.className="small num-crit";st.textContent="Esto es un resumen mensual de Don Oscar, no un recibo. Súbalo en Cuenta con Oscar → Liquidar un mes, donde queda en el mes correcto y con su detalle.";return}}
     const reads=passes.filter(p=>p.length).map(readReceipt);const best=reads.find(r=>r.valor)||reads[0]||{};
     const filled=[];
     if(best.valor&&!$("rValor").value){$("rValor").value=best.valor;filled.push("valor "+fmt(best.valor))}
