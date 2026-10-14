@@ -274,6 +274,7 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
     </div>
     <div class="card">
       <div class="card-head"><h3>Movimientos de la cuenta</h3><span class="small muted">Positivo: Oscar le debe a usted</span></div>
+      <p class="small" id="movSum"></p>
       <div class="tablebox"><table id="tbMov"></table></div>
     </div>
   </section>
@@ -618,7 +619,11 @@ function renderCuenta(MM){
   $("pendBox").innerHTML=C.pend.length?`<div class="tablebox"><table id="tbPend"></table></div>`:`<p class="muted small">No hay saldos pendientes con proveedores ni con el mecánico.</p>`;
   if(C.pend.length){table("tbPend",["~Concepto","Total","Pagado","Falta","40% Oscar","Registrar abono"],C.pend.map(({g,falta})=>[{t:esc(g.nota)+"<br><span class='small muted'>"+esc(g.proveedor||"")+"</span>",c:"wrap"},fmt(g.valor),fmt(g.valor-falta),fmt(falta),fmt(falta*.4),{t:`<div class="abono"><input type="number" inputmode="numeric" id="ab-${esc(g._id)}" value="${Math.round(falta)}" aria-label="Valor del abono"><select id="abp-${esc(g._id)}" aria-label="Quién paga"><option value="DJW">Pagué yo</option><option value="Oscar">Pagó Oscar</option></select><button class="btn ghost" data-ab="${esc(g._id)}">Guardar</button></div>`,c:""}]));
     $("tbPend").querySelectorAll("[data-ab]").forEach(b=>b.addEventListener("click",()=>saveAbono(b.dataset.ab,b)));}
-  table("tbMov",["Fecha","~Movimiento","Efecto","Saldo"],[...C.movs].reverse().map(m=>[fdate(m.fecha),{t:esc(m.c),c:"wrap"},{t:(m.v>=0?"+ ":"− ")+fmt(Math.abs(m.v)),c:m.v>=0?"num-good":"num-crit"},fmt(m.acc)]),null,"Sin movimientos todavía.");
+  // lo que falta por pagar va arriba, como pendiente, con el saldo que quedaría
+  let accP=C.saldo;const pendRows=C.pend.map(({g,falta})=>{accP+=0.4*falta;return [`<span class="pill warn">Pendiente</span>`,{t:esc(`Falta pagar ${g.nota}: ${fmt(falta)} de ${fmt(g.valor)}; 40% de Oscar`),c:"wrap"},{t:"+ "+fmt(0.4*falta),c:"muted"},{t:fmt(accP),c:"muted"}]});
+  table("tbMov",["Fecha","~Movimiento","Efecto","Saldo"],[...pendRows.reverse(),...[...C.movs].reverse().map(m=>[fdate(m.fecha),{t:esc(m.c),c:"wrap"},{t:(m.v>=0?"+ ":"− ")+fmt(Math.abs(m.v)),c:m.v>=0?"num-good":"num-crit"},fmt(m.acc)])],
+    null,"Sin movimientos todavía.");
+  $("movSum").innerHTML=`Saldo hoy: <b>${C.saldo>=0?"Oscar le debe ":"usted le debe a Oscar "}${fmt(Math.abs(C.saldo))}</b>`+(C.pend.length?` · Cuando se pague lo pendiente: <b>${C.proy>=0?"Oscar le debe ":"usted le debe a Oscar "}${fmt(Math.abs(C.proy))}</b>`:"");
   // liquidation form defaults
   if(!mesManual){const ks=Object.keys(S.liq).sort();$("lMes").value=ks.length?nextMonth(ks[ks.length-1]):new Date(Date.now()-5*3600e3).toISOString().slice(0,7)}
   const m=$("lMes").value;if(m!==lastMes){touched.clear();lastMes=m;const cl=S.liq[m];$("lFactNo").value=cl?cl.facturaNo||"":""}
