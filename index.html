@@ -918,30 +918,45 @@ function repModel(){const L=liqCalc();const m=L.m;const E=edCur()||{ing:[],gas:[
       {title:"1. Producido",rows:lines(E.ing,L.prod),foot:["Total producido",n(L.prod)]},
       {title:"2. Gastos",rows:lines(E.gas,L.gas),foot:["Total gastos",n(L.gas)]},
       {title:"3. Utilidad",rows:[["Producido",n(L.prod)],["Menos gastos","− "+n(L.gas)],["Utilidad del mes",n(L.ut),"b"],["Don Óscar 40%",n(L.osc)],["Daniel 60%",n(L.djw)]]},
-      {title:"4. Cruce de cuentas con Jaramillo Williamson SAS",rows:cruce,foot:[L.saldo>=0?"Daniel le consigna a Don Óscar":"Don Óscar le gira a Daniel",n(Math.abs(L.saldo))],saldo:true}],
+      {title:"4. Cruce con Jaramillo Williamson SAS",rows:cruce,foot:[L.saldo>=0?"Daniel le consigna a Don Óscar":"Don Óscar le gira a Daniel",n(Math.abs(L.saldo))],saldo:true}],
     notes}}
 function repHtml(R){return `<div class="paper"><div><div class="kick">${esc(R.kicker)}</div><h2>${esc(R.title)}</h2><div class="sub">${esc(R.sub)}</div></div>
   ${R.sections.map(s=>`<section><h3>${esc(s.title)}</h3><table><tbody>${s.rows.map(r=>`<tr><td${r[2]==="b"?' class="b"':""}>${esc(r[0])}</td><td${r[2]==="b"?' class="b"':""}>${esc(r[1])}</td></tr>`).join("")}</tbody>${s.foot?`<tfoot${s.saldo?' class="saldo"':""}><tr><td>${esc(s.foot[0])}</td><td>${esc(s.foot[1])}</td></tr></tfoot>`:""}</table></section>`).join("")}
   ${R.notes.map(t=>`<p class="note">${esc(t)}</p>`).join("")}</div>`}
 const JSPDF="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+
+/* una sola hoja carta: producido y gastos lado a lado; si no cabe, se reduce la letra */
 async function repPdf(R){if(!window.jspdf)await loadScript(JSPDF);const {jsPDF}=window.jspdf;const d=new jsPDF({unit:"pt",format:"letter"});
-  const W=d.internal.pageSize.getWidth(),H=d.internal.pageSize.getHeight(),M=50,VW=110;let y=M;
+  const W=d.internal.pageSize.getWidth(),H=d.internal.pageSize.getHeight(),M=40,G=24;
   const t=s=>String(s).replace(/−/g,"-").replace(/→/g,"a");
-  const need=h=>{if(y+h>H-M){d.addPage();y=M}};
-  d.setFont("helvetica","bold");d.setFontSize(8.5);d.setTextColor(95,99,107);d.text(t(R.kicker).toUpperCase(),M,y);y+=26;
-  d.setFontSize(24);d.setTextColor(22,25,28);d.text(t(R.title),M,y);y+=18;
-  d.setFont("helvetica","normal");d.setFontSize(10);d.setTextColor(95,99,107);d.text(t(R.sub),M,y);y+=30;
-  R.sections.forEach(s=>{need(70);d.setFont("helvetica","bold");d.setFontSize(12.5);d.setTextColor(22,25,28);d.text(t(s.title),M,y);y+=6;
+  // dibuja (o solo mide si draw=false) una sección en la columna x..x+w desde y; devuelve la y final
+  function sec(s,x,w,y,k,draw){if(!s)return y;const fs=10*k,lh=fs*1.25,pad=fs*.55,VW=Math.min(95,w*.4);
+    if(draw){d.setFont("helvetica","bold");d.setFontSize(11.5*k);d.setTextColor(22,25,28);d.text(t(s.title),x,y+11*k)}y+=15*k;
     d.setLineWidth(.5);d.setDrawColor(210,214,219);
-    s.rows.forEach(r=>{d.setFont("helvetica",r[2]==="b"?"bold":"normal");d.setFontSize(10.5);const ls=d.splitTextToSize(t(r[0]),W-2*M-VW-10);const h=ls.length*13+9;need(h);y+=14;
-      d.setTextColor(30,33,36);d.text(ls,M,y);d.text(t(r[1]),W-M,y,{align:"right"});y+=(ls.length-1)*13+6;d.line(M,y,W-M,y)});
-    if(s.foot){need(30);y+=3;if(s.saldo){d.setFillColor(238,244,251);d.rect(M,y,W-2*M,24,"F")}d.setLineWidth(1.3);d.setDrawColor(22,25,28);d.line(M,y,W-M,y);
-      d.setFont("helvetica","bold");d.setFontSize(s.saldo?12.5:11);d.setTextColor(22,25,28);d.text(t(s.foot[0]),M+(s.saldo?6:0),y+16);d.text(t(s.foot[1]),W-M-(s.saldo?6:0),y+16,{align:"right"});y+=24}
-    y+=26});
-  d.setFont("helvetica","normal");d.setFontSize(9);d.setTextColor(95,99,107);
-  R.notes.forEach(n=>{const ls=d.splitTextToSize(t(n),W-2*M);need(ls.length*12+6);d.text(ls,M,y);y+=ls.length*12+6});
-  return d.output("blob")}
+    s.rows.forEach(r=>{d.setFont("helvetica",r[2]==="b"?"bold":"normal");d.setFontSize(fs);const ls=d.splitTextToSize(t(r[0]),w-VW-6);
+      if(draw){d.setTextColor(30,33,36);d.text(ls,x,y+pad+fs*.8);d.text(t(r[1]),x+w,y+pad+fs*.8,{align:"right"})}
+      y+=pad*2+fs+(ls.length-1)*lh;if(draw)d.line(x,y,x+w,y)});
+    if(s.foot){const h=(s.saldo?12:10.5)*k*2;if(draw){if(s.saldo){d.setFillColor(238,244,251);d.rect(x,y+2,w,h,"F")}d.setLineWidth(1.2);d.setDrawColor(22,25,28);d.line(x,y+2,x+w,y+2);
+        d.setFont("helvetica","bold");d.setFontSize((s.saldo?12:10.5)*k);d.setTextColor(22,25,28);const i=s.saldo?6:0;
+        const ls=d.splitTextToSize(t(s.foot[0]),w-VW-6-i);d.text(ls[0],x+i,y+2+h*.66);d.text(t(s.foot[1]),x+w-i,y+2+h*.66,{align:"right"})}
+      y+=h+2}
+    return y}
+  function lay(k,draw){let y=M;
+    if(draw){d.setFont("helvetica","bold");d.setFontSize(8.5);d.setTextColor(95,99,107);d.text(t(R.kicker).toUpperCase(),M,y+8)}y+=8+22*k;
+    if(draw){d.setFont("helvetica","bold");d.setFontSize(22*k);d.setTextColor(22,25,28);d.text(t(R.title),M,y)}y+=16*k;
+    if(draw){d.setFont("helvetica","normal");d.setFontSize(9.5*k);d.setTextColor(95,99,107);d.text(t(R.sub),M,y)}y+=22*k;
+    const cw=(W-2*M-G)/2,[a,b,u,c]=R.sections;
+    y=Math.max(sec(a,M,cw,y,k,draw),sec(b,M+cw+G,cw,y,k,draw))+20*k;
+    y=Math.max(sec(u,M,cw,y,k,draw),sec(c&&{...c,foot:null},M+cw+G,cw,y,k,draw))+12*k;
+    if(c&&c.foot){const h=30*k;if(draw){d.setFillColor(238,244,251);d.rect(M,y,W-2*M,h,"F");d.setLineWidth(1.4);d.setDrawColor(22,25,28);d.line(M,y,W-M,y);
+        d.setFont("helvetica","bold");d.setFontSize(13*k);d.setTextColor(22,25,28);d.text(t("Saldo del mes: "+c.foot[0]),M+8,y+h*.64);d.setFontSize(15*k);d.text(t(c.foot[1]),W-M-8,y+h*.64,{align:"right"})}
+      y+=h+18*k}
+    d.setFont("helvetica","normal");d.setFontSize(8.5*k);d.setTextColor(95,99,107);
+    R.notes.forEach(n=>{const ls=d.splitTextToSize(t(n),W-2*M);if(draw)d.text(ls,M,y+8.5*k);y+=ls.length*8.5*k*1.3+4*k});
+    return y}
+  let k=1;for(let i=0;i<15&&lay(k,false)>H-M;i++)k*=0.94;
+  lay(k,true);return d.output("blob")}
 let repCur=null;
 function repOpen(){const L=liqCalc();const msg=$("lToast");
   if(!L.m||!(L.prod>0)){msg.textContent="Falta el mes o el producido.";msg.className="toast num-crit";return}
