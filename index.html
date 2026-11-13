@@ -223,6 +223,13 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
   <section class="panel" id="p-resumen" role="tabpanel">
     <div class="tiles" id="tilesResumen"></div>
     <div class="card">
+      <div class="card-head"><h2>Resumen general del proyecto</h2><span class="small muted" id="rangoGeneral">Todas las máquinas · COP</span></div>
+      <div class="tablebox"><table id="tbGeneral"></table></div>
+      <p class="small muted" id="notaGeneral"></p>
+      <h3 style="margin-top:18px">Volqueta mes a mes</h3>
+      <div class="tablebox"><table id="tbGenMes"></table></div>
+    </div>
+    <div class="card">
       <div class="card-head"><h2>Cómo se reparte cada mes</h2><span class="small muted" id="rangoResumen">Volqueta · COP</span></div>
       <div class="legend"><span><i style="background:var(--neutral)"></i>Gastos</span><span><i style="background:var(--s1)"></i>Utilidad DJW 60%</span><span><i style="background:var(--s2)"></i>Utilidad Oscar 40%</span></div>
       <div class="chart" id="chResumen"></div>
@@ -505,6 +512,28 @@ function render(){
   const tI=sum(ingM),tG=sum(gasM),tU=tI-tG;const D=dozerModel();
   $("rangoResumen").textContent=MM.length?`Volqueta · ${full[0]} a ${full[full.length-1]} · COP`:"Volqueta · COP";
   tiles("tilesResumen",[["Producido volqueta",fm(tI),MM.length+" meses"],["Gastos",fm(tG),pct(tG/tI)+" del producido"],["Utilidad",fm(tU),"Margen "+pct(tU/tI)],["Su 60%",fm(tU*.6),"Oscar 40%: "+fm(tU*.4)],["Invertido en bulldozer",fm(D.invTot),D.horas?D.horas.toLocaleString("es-CO")+" h trabajadas":"Sin horas facturadas aún"],(()=>{const C=cuentaModel();return [C.saldo>=0?"Oscar le debe":"Usted le debe a Oscar",fm(Math.abs(C.saldo)),"Saldo bulldozer · ver Cuenta"]})()]);
+  { /* resumen general */
+    const C=cuentaModel();const op=sum(D.op.map(r=>+r.valor||0));const invPagado=sum(D.inv.filter(r=>r.estado!=="Cotización"&&r.estado!=="Anulado").map(r=>sum(paidEvents(r).map(e=>e.valor))));
+    const invPend=D.invTot-invPagado;const dozRes=D.ingreso-op-D.invTot;const neto=tU+dozRes;
+    const row=(c,v,b)=>[{t:c,c:"wrap"+(b?" b":"")},{t:fmt(v),c:v<0?"num-crit":""},fmt(v*.6),fmt(v*.4)];
+    const sec=t=>[{t:`<b>${t}</b>`,c:"wrap"},"","",""];
+    table("tbGeneral",["~Concepto","Total","DJW 60%","Oscar 40%"],[
+      sec("Volqueta Chevrolet Brigadier 1983"),
+      row("Producido ("+MM.length+" meses)",tI),row("Gastos de operación",-tG),row("<b>Utilidad volqueta</b>",tU),
+      sec("Bulldozer CAT D5H XL 1981 · "+(D.horas?"trabajando":"en reparación")),
+      row("Ingresos por horas"+(D.horas?" ("+D.horas.toLocaleString("es-CO")+" h)":""),D.ingreso),
+      row(`Inversión en reparación<br><span class="small muted">Pagado ${fmt(invPagado)} · pendiente ${fmt(invPend)}</span>`,-D.invTot),
+      ...(op?[row("Gastos de operación",-op)]:[]),
+      row("<b>Resultado bulldozer</b>",dozRes)],
+      [neto>=0?"Resultado neto de la sociedad":"Resultado neto de la sociedad (inversión aún sin recuperar)",fmt(neto),fmt(neto*.6),fmt(neto*.4)]);
+    $("rangoGeneral").textContent=MM.length?`${full[0]} a ${full[full.length-1]} · COP`:"COP";
+    $("notaGeneral").innerHTML=`Saldo de cuentas con Don Oscar por el bulldozer: <b>${C.saldo>=0?"él le debe ":"usted le debe "}${fmt(Math.abs(C.saldo))}</b>`+(C.pendTot?` · Cuando se pague lo pendiente: ${C.proy>=0?"él le debe ":"usted le debe "}${fmt(Math.abs(C.proy))}`:"")+". La inversión del bulldozer incluye lo pendiente por pagar y se reparte 60/40.";
+    const liqT=[0,0];
+    table("tbGenMes",["Mes","Producido","Gastos","Utilidad","DJW 60%","Oscar 40%","Factura JW SAS","Saldo liquidación","Estado"],MM.map((x,i)=>{const l=S.liq[x.m];if(l){liqT[0]+=+l.fact||0}
+      return [full[i],fmt(ingM[i]),fmt(gasM[i]),fmt(utM[i]),fmt(utM[i]*.6),fmt(utM[i]*.4),l?fmt(l.fact):"—",l?{t:fmt(Math.abs(l.saldo)),c:l.saldo<0?"num-good":""}:"—",
+        l?{t:`<span class="pill ${l.saldo>=0?"info":"good"}">${l.saldo>=0?"DJW consignó":"Oscar giró"}</span>`,c:""}:{t:`<span class="pill warn">Abierta</span>`,c:""}]}),
+      ["Total",fmt(tI),fmt(tG),fmt(tU),fmt(tU*.6),fmt(tU*.4),fmt(liqT[0]),"",""]);
+  }
   stacked("chResumen",labels,full,[{k:"Gastos",c:"--neutral",v:gasM},{k:"Utilidad DJW 60%",c:"--s1",v:utM.map(u=>u>0?u*.6:0)},{k:"Utilidad Oscar 40%",c:"--s2",v:utM.map(u=>u>0?u*.4:0)}]);
   table("tbMargen",["Mes","Fuente","Producido","Gastos","Utilidad","Margen"],MM.map((x,i)=>[full[i],`<span class="pill ${x.src==="reporte"?"info":"warn"}">${x.src==="reporte"?"Reporte":"Registros"}</span>`,fmt(ingM[i]),fmt(gasM[i]),fmt(utM[i]),{t:pct(utM[i]/ingM[i]),c:utM[i]/ingM[i]<0.45?"num-crit":"num-good"}]),["Total","",fmt(tI),fmt(tG),fmt(tU),pct(tU/tI)]);
   $("dozerMiniTxt").textContent=D.horas?`Lleva ${D.horas.toLocaleString("es-CO")} horas y ${fm(D.ingreso)} facturados.`:"Todavía no ha facturado horas. Lo invertido en la reparación va en la pestaña Bulldozer.";
